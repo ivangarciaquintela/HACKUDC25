@@ -1,10 +1,30 @@
 # Technical Skills Registry System
 
+https://github.com/ivangarciaquintela/HACKUDC25
 
 run: 
     docker compose down && docker compose up --build
 
 A system for registering and querying personal technical competencies.
+
+The services will be available at:
+- Frontend: http://localhost
+- API: http://localhost:8000
+- Database: localhost:5432
+
+
+## TODO
+
+- [ ] Add authentication with db
+- [ ] Create a db schema
+- [ ] API to add and query stufff
+
+
+
+- Skill groups or paths (e.g., "Full Stack Developer" track)
+- Skill recommendations based on existing skills
+
+
 
 ## Project Structure
 
@@ -28,25 +48,6 @@ A system for registering and querying personal technical competencies.
 └── README.md
 ```
 
-## Prerequisites
-
-- Docker
-- Docker Compose
-
-## Getting Started
-
-1. Clone the repository
-2. Navigate to the project directory
-3. Start the services:
-
-```bash
-docker-compose up --build
-```
-
-The services will be available at:
-- Frontend: http://localhost
-- API: http://localhost:8000
-- Database: localhost:5432
 
 ## Environment Variables
 
