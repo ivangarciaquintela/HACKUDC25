@@ -1,12 +1,15 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Form, Header
+from fastapi import FastAPI, Depends, HTTPException, status, Form, Header, Query
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, text, func
 from passlib.context import CryptContext
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from .database.database import get_db
 from .models.user import User
+from .models.skill import Skill
+from .models.user_skill import UserSkill
 
 app = FastAPI(title="Technical Skills Registry API")
 
@@ -122,4 +125,62 @@ async def update_profile(
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to Technical Skills Registry API"} 
+    return {"message": "Welcome to Technical Skills Registry API"}
+
+@app.get("/skills/search")
+async def search_skills(
+    q: Optional[str] = None,
+    category: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(
+        Skill.id,
+        Skill.name,
+        Skill.version,
+        Skill.description,
+        Skill.category,
+        func.count(UserSkill.user_id.distinct()).label('user_count')
+    ).outerjoin(UserSkill)
+    
+    if q:
+        query = query.filter(or_(
+            Skill.name.ilike(f"%{q}%"),
+            Skill.description.ilike(f"%{q}%")
+        ))
+    
+    if category:
+        query = query.filter(Skill.category == category)
+    
+    query = query.group_by(
+        Skill.id,
+        Skill.name,
+        Skill.version,
+        Skill.description,
+        Skill.category
+    )
+    
+    results = query.all()
+    return [dict(zip(['id', 'name', 'version', 'description', 'category', 'user_count'], r)) for r in results]
+
+@app.get("/skills/{skill_id}/users")
+async def get_skill_users(
+    skill_id: str,
+    db: Session = Depends(get_db)
+):
+    users = db.query(
+        "users.username",
+        "user_skills.proficiency_level",
+        "user_skills.years_experience"
+    ).join(
+        "user_skills",
+        "users.id == user_skills.user_id"
+    ).filter(
+        "user_skills.skill_id == :skill_id"
+    ).params(skill_id=skill_id).all()
+    
+    return [dict(u) for u in users]
+
+@app.get("/skills/categories")
+async def get_categories(db: Session = Depends(get_db)):
+    categories = db.query(Skill.category).distinct().all()
+    return [c[0] for c in categories if c[0]] 
