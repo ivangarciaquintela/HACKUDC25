@@ -10,22 +10,74 @@
     <header>
         <nav>
             <h1>Technical Skills Registry</h1>
-            <div class="nav-links">
-                <a href="/login.html">Login</a>
-                <a href="/register.html">Register</a>
+            <div class="nav-links" id="navLinks">
+                <!-- Links will be dynamically updated based on auth status -->
             </div>
         </nav>
     </header>
 
     <main>
         <section class="welcome">
-            <h2>Welcome to Technical Skills Registry</h2>
-            <p>Register and manage your technical skills portfolio</p>
+            <h2 id="welcomeMessage">Welcome to Technical Skills Registry</h2>
+            <p id="userStatus">Please login or register to manage your skills</p>
+            <div id="loggedInContent" style="display: none;">
+                <button id="logoutBtn" class="secondary-button">Logout</button>
+            </div>
         </section>
     </main>
 
     <footer>
         <p>&copy; 2024 Technical Skills Registry</p>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            const navLinks = document.getElementById('navLinks');
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            const userStatus = document.getElementById('userStatus');
+            const loggedInContent = document.getElementById('loggedInContent');
+
+            function updateUI() {
+                if (token) {
+                    // User is logged in
+                    navLinks.innerHTML = `
+                        <a href="/skills.html">My Skills</a>
+                        <a href="#" id="logoutLink">Logout</a>
+                    `;
+                    welcomeMessage.textContent = `Welcome back, ${token}!`;
+                    userStatus.textContent = 'Manage your technical skills portfolio';
+                    loggedInContent.style.display = 'block';
+                } else {
+                    // User is not logged in
+                    navLinks.innerHTML = `
+                        <a href="/login.html">Login</a>
+                        <a href="/register.html">Register</a>
+                    `;
+                    welcomeMessage.textContent = 'Welcome to Technical Skills Registry';
+                    userStatus.textContent = 'Please login or register to manage your skills';
+                    loggedInContent.style.display = 'none';
+                }
+            }
+
+            // Initial UI update
+            updateUI();
+
+            // Handle logout
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('token');
+                updateUI();
+            });
+
+            // Also handle logout from nav link
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.id === 'logoutLink') {
+                    e.preventDefault();
+                    localStorage.removeItem('token');
+                    updateUI();
+                }
+            });
+        });
+    </script>
 </body>
 </html> 

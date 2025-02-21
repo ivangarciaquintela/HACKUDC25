@@ -41,3 +41,6 @@ INSERT INTO skills (name, version) VALUES
     ('Docker', 'latest'),
     ('PostgreSQL', '15'),
     ('Git', 'latest'); 
+
+   
+   
