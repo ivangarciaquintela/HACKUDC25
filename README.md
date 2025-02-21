@@ -15,12 +15,13 @@ The services will be available at:
 
 ## TODO
 
-- [ ] Add authentication with db
-- [ ] Create a db schema
+- profile page
 - [ ] API to add and query stufff
 
 
 
+- request partuicular skill
+- ultimas skills añadidas
 - Skill groups or paths (e.g., "Full Stack Developer" track)
 - Skill recommendations based on existing skills
 

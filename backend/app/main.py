@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Form
+from fastapi import FastAPI, Depends, HTTPException, status, Form, Header
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from datetime import datetime
+from typing import Optional
 from .database.database import get_db
 from .models.user import User
 
@@ -20,6 +21,22 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Helper function to get current user
+async def get_current_user(authorization: str = Header(None), db: Session = Depends(get_db)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+    token = authorization.split(" ")[1]
+    user = db.query(User).filter(User.username == token).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
+    return user
 
 @app.post("/register")
 async def register(
@@ -69,9 +86,39 @@ async def login(
         )
     
     return {
-        "access_token": user.username,  # In a real app, generate a JWT token here
+        "access_token": user.username,
         "token_type": "bearer"
     }
+
+@app.get("/profile")
+async def get_profile(current_user: User = Depends(get_current_user)):
+    return {
+        "username": current_user.username,
+        "email": current_user.email
+    }
+
+@app.put("/profile")
+async def update_profile(
+    email: str = Form(...),
+    new_password: str = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Check if email is taken by another user
+    existing_user = db.query(User).filter(User.email == email).first()
+    if existing_user and existing_user.id != current_user.id:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
+    
+    # Update user
+    current_user.email = email
+    if new_password:
+        current_user.password_hash = pwd_context.hash(new_password)
+    
+    db.commit()
+    return {"message": "Profile updated successfully"}
 
 @app.get("/")
 async def root():

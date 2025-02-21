@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Technical Skills Registry</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>Technical Skills Registry</h1>
+            <div class="nav-links" id="navLinks">
+                <a href="/">Home</a>
+                <a href="/skills.html">My Skills</a>
+                <a href="/profile.html">Profile</a>
+                <a href="#" id="logoutLink">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="form-container profile-container">
+            <h2>My Profile</h2>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password (leave blank to keep current):</label>
+                    <input type="password" id="newPassword" name="newPassword">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password:</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword">
+                </div>
+                <button type="submit">Update Profile</button>
+                <p id="message" class="message"></p>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Technical Skills Registry</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Load user profile
+            fetch('http://localhost:8000/profile', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('username').value = data.username;
+                document.getElementById('email').value = data.email;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('message').style.color = 'red';
+                document.getElementById('message').textContent = 'Error loading profile';
+            });
+
+            // Handle form submission
+            document.getElementById('profileForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const message = document.getElementById('message');
+
+                // Validate passwords if provided
+                if (formData.get('newPassword')) {
+                    if (formData.get('newPassword') !== formData.get('confirmPassword')) {
+                        message.style.color = 'red';
+                        message.textContent = 'Passwords do not match';
+                        return;
+                    }
+                }
+
+                try {
+                    const response = await fetch('http://localhost:8000/profile', {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: new URLSearchParams({
+                            email: formData.get('email'),
+                            new_password: formData.get('newPassword') || ''
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        message.style.color = 'green';
+                        message.textContent = 'Profile updated successfully';
+                    } else {
+                        message.style.color = 'red';
+                        message.textContent = data.detail || 'Error updating profile';
+                    }
+                } catch (error) {
+                    message.style.color = 'red';
+                    message.textContent = 'Error connecting to server';
+                }
+            });
+
+            // Handle logout
+            document.getElementById('logoutLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('token');
+                window.location.href = '/';
+            });
+        });
+    </script>
+</body>
+</html> 
