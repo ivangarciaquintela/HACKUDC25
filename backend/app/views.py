@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Form, Header, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Form, Header, Request, Cookie
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -20,47 +20,55 @@ templates = Jinja2Templates(directory=templates_dir)
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-@router.get("/", response_class=HTMLResponse)
-async def read_root(request: Request, db: Session = Depends(get_db), authorization: str = Header(None)):
-    # Debug prints
-    print(f"Checking if directory exists: {templates_dir}")
-    print(f"Absolute path: {os.path.abspath(templates_dir)}")
-    print(f"Directory exists: {os.path.exists(templates_dir)}")
-    print(f"Directory is readable: {os.access(templates_dir, os.R_OK)}")
+async def check_auth(request: Request, db: Session) -> User | None:
+    token = request.cookies.get("access_token")
+    print(f"Debug - Got token from cookies: {token}")  # Debug line
+    
+    if not token:
+        return None
+        
+    try:
+        user = await get_current_user(token, db)
+        print(f"Debug - User found: {user}")  # Debug line
+        return user
+    except HTTPException as e:
+        print(f"Debug - Auth error: {str(e)}")  # Debug line
+        return None
 
-    return templates.TemplateResponse("index.html", {"request": request, "user": None})
-    # try:
-    #     current_user = await get_current_user(authorization, db)
-    #     return templates.TemplateResponse("index.html", {"request": request, "user": current_user})
-    # except HTTPException:
-    #     return RedirectResponse(url="/auth")
+@router.get("/", response_class=HTMLResponse)
+async def read_root(request: Request, db: Session = Depends(get_db)):
+    user = await check_auth(request, db)
+    if not user:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_303_SEE_OTHER)
+    return templates.TemplateResponse("index.html", {"request": request, "user": user})
 
 @router.get("/auth", response_class=HTMLResponse)
-async def auth(request: Request, authorization: str = Header(None)):
-    # if authorization:
-    #     try:
-    #         # If user is already authenticated, redirect to home
-    #         current_user = await get_current_user(authorization, db)
-    #         return RedirectResponse(url="/")
-    #     except HTTPException:
-    #         pass
+async def auth(request: Request, db: Session = Depends(get_db)):
+    user = await check_auth(request, db)
+    if user:
+        return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     return templates.TemplateResponse("auth.html", {"request": request})
 
-@router.get("/", response_class=HTMLResponse)
-async def index(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
 @router.get("/users", response_class=HTMLResponse)
-async def users(request: Request):
-    return templates.TemplateResponse("users.html", {"request": request})
+async def users(request: Request, db: Session = Depends(get_db)):
+    user = await check_auth(request, db)
+    if not user:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_303_SEE_OTHER)
+    return templates.TemplateResponse("users.html", {"request": request, "user": user})
 
 @router.get("/guides", response_class=HTMLResponse)
-async def guides(request: Request):
-    return templates.TemplateResponse("guides.html", {"request": request})
+async def guides(request: Request, db: Session = Depends(get_db)):
+    user = await check_auth(request, db)
+    if not user:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_303_SEE_OTHER)
+    return templates.TemplateResponse("guides.html", {"request": request, "user": user})
 
 @router.get("/issues", response_class=HTMLResponse)
-async def guides(request: Request):
-    return templates.TemplateResponse("issues.html", {"request": request})
+async def issues(request: Request, db: Session = Depends(get_db)):
+    user = await check_auth(request, db)
+    if not user:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_303_SEE_OTHER)
+    return templates.TemplateResponse("issues.html", {"request": request, "user": user})
 
 @router.get("/skills", response_class=HTMLResponse)
 async def guides(request: Request):
