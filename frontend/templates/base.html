@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Technical Skills Registry{% endblock %}</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-500 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-white text-lg font-bold">Technical Skills Registry</a>
+            <div>
+                <a href="/" class="text-white px-4">Home</a>
+                <a href="/profile" class="text-white px-4">Profile</a>
+                <a href="/skills" class="text-white px-4">Skills</a>
+                <a href="/guides" class="text-white px-4">Guides</a>
+                <a href="/issues" class="text-white px-4">Issues</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container mx-auto mt-10">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
