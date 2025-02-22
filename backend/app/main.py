@@ -164,6 +164,7 @@ async def search_skills(
     results = query.all()
     return [dict(zip(['id', 'name', 'version', 'description', 'category', 'user_count'], r)) for r in results]
 
+
 @app.get("/skills/{skill_id}/users")
 async def get_skill_users(
     skill_id: str,
