@@ -3,24 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %}</title>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
-    <link rel="stylesheet" href="/static/css/tailwind.min.css">
+    <title>{% block title %}Technical Skills Registry{% endblock %}</title>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
-    <nav class="bg-blue-500 p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="/" class="text-white text-lg font-bold">Technical Skills Registry</a>
-            <div>
-                <a href="/" class="text-white px-4">Home</a>
-                <a href="/profile" class="text-white px-4">Profile</a>
-                <a href="/skills" class="text-white px-4">Skills</a>
-                <a href="/guides" class="text-white px-4">Guides</a>
-                <a href="/issues" class="text-white px-4">Issues</a>
+    <nav class="bg-white dark:bg-gray-800 shadow-lg fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="/" class="text-xl font-bold text-gray-900 dark:text-white">SkillHub</a>
+                    </div>
+                    <div class="hidden md:ml-6 md:flex md:space-x-8">
+                        <a x-on:click="activeView = 'issues'" href="/issues" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Issues</a>
+                        <a x-on:click="activeView = 'guides'" href="/guides" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Guides</a>
+                        <a x-on:click="activeView = 'users'" href="/users" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Users</a>
+                        <a href="#" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">My Profile</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button @click="darkMode = !darkMode" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <span x-show="!darkMode" class="text-gray-700">🌙</span>
+                        <span x-show="darkMode" class="text-white">☀️</span>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
-    <div class="container mx-auto mt-10">
+    <div class="container mx-auto mt-20">
         {% block content %}{% endblock %}
     </div>
 </body>

@@ -1,0 +1,5 @@
+    <input type="text" 
+        x-model="searchQuery" 
+        placeholder="Search..."
+        class="flex-grow rounded-lg border border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+        @input.debounce.300ms="performSearch">

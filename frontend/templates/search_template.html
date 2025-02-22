@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ darkMode: false, searchQuery: '', activeView: 'issues', filters: {} }" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Base</title>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-lg fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="#" class="text-xl font-bold text-gray-900 dark:text-white">KnowledgeBase</a>
+                    </div>
+                    <div class="hidden md:ml-6 md:flex md:space-x-8">
+                        <a x-on:click="activeView = 'issues'" href="#" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Issues</a>
+                        <a x-on:click="activeView = 'guides'" href="#" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Guides</a>
+                        <a x-on:click="activeView = 'users'" href="#" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Users</a>
+                        <a href="#" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">My Profile</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button @click="darkMode = !darkMode" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <span x-show="!darkMode" class="text-gray-700">🌙</span>
+                        <span x-show="darkMode" class="text-white">☀️</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-20 pb-8 px-4 sm:px-6 lg:px-8">
+        <!-- Search Bar -->
+        <div class="max-w-3xl mx-auto mb-6">
+            <input type="text" 
+                   x-model="searchQuery" 
+                   placeholder="Search..." 
+                   class="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-3 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white transition-all"
+                   @input.debounce.300ms="performSearch">
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-wrap gap-4 mb-6">
+            <select class="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 bg-white dark:bg-gray-800 dark:text-white shadow-sm"
+                    x-model="filters.category">
+                <option value="">All Categories</option>
+                <option>Technical</option>
+                <option>General</option>
+                <option>Support</option>
+            </select>
+            
+            <select class="rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 bg-white dark:bg-gray-800 dark:text-white shadow-sm"
+                    x-model="filters.status">
+                <option value="">All Statuses</option>
+                <option>Open</option>
+                <option>Closed</option>
+                <option>Pending</option>
+            </select>
+            
+            <button @click="performSearch" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md transition-colors">
+                Search
+            </button>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamic Content will go here -->
+            <template x-for="item in filteredItems" :key="item.id">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                    <h3 class="text-lg font-semibold mb-2 dark:text-white" x-text="item.title"></h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4" x-text="item.description"></p>
+                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <span x-text="item.category"></span>
+                        <span class="mx-2">•</span>
+                        <span x-text="item.date"></span>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </main>
+
+    <script>
+        // Example data - replace with actual data loading
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('app', () => ({
+                searchQuery: '',
+                filters: {
+                    category: '',
+                    status: ''
+                },
+                performSearch() {
+                    // Implement search logic here
+                    console.log('Searching:', this.searchQuery, this.filters);
+                },
+                filteredItems: [
+                    // Sample data - replace with actual data
+                    { id: 1, title: 'Sample Issue', description: 'This is a sample issue', category: 'Technical', date: '2023-09-20' },
+                    { id: 2, title: 'User Guide', description: 'Getting started guide', category: 'General', date: '2023-09-19' }
+                ]
+            }))
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Guides - Technical Skills Registry{% endblock %}
+{% block content %}
+
+<div x-data="guideApp" class="container mx-auto mt-10">
+    <!-- Search Bar -->
+    <div class="max-w-3xl mx-auto mb-6 flex flex-wrap gap-4">
+        {% include "search-bar.html" %}
+        
+        <select class="rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm" x-model="filters.category">
+            <option value="">All Categories</option>
+            <option value="Development">Development</option>
+            <option value="Design">Design</option>
+            <option value="Marketing">Marketing</option>
+        </select>
+    </div>
+
+    <!-- Guides Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <template x-for="guide in filteredGuides" :key="guide.id">
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <h3 class="text-lg font-semibold mb-2" x-text="guide.title"></h3>
+                <div class="prose" x-html="guide.content"></div>
+            </div>
+        </template>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('guideApp', () => ({
+            searchQuery: '',
+            filters: {
+                category: ''
+            },
+            guides: [
+                // Sample data - replace with actual data
+                { id: 1, title: 'Guide to Development', content: '# Development Guide\nThis is a guide to development.', category: 'Development' },
+                { id: 2, title: 'Guide to Design', content: '# Design Guide\nThis is a guide to design.', category: 'Design' },
+                { id: 3, title: 'Guide to Marketing', content: '# Marketing Guide\nThis is a guide to marketing.', category: 'Marketing' }
+            ],
+            get filteredGuides() {
+                return this.guides.filter(guide => {
+                    return (this.searchQuery === '' || guide.title.toLowerCase().includes(this.searchQuery.toLowerCase())) &&
+                        (this.filters.category === '' || guide.category === this.filters.category);
+                });
+            },
+            performSearch() {
+                console.log('Searching:', this.searchQuery, this.filters);
+            }
+        }))
+    })
+</script>
+{% endblock %}

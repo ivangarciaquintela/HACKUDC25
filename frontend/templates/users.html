@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Users - Technical Skills Registry{% endblock %}
+
+{% block content %}
+<div x-data="userApp" class="container mx-auto mt-10">
+    
+    <!-- Search Bar -->
+    <div> 
+        <div class="max-w-3xl mx-auto mb-6 flex flex-wrap gap-4">
+            {% include "search-bar.html" %}
+            
+            <select class="rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm"
+                    x-model="filters.role">
+                <option value="">All Roles</option>
+                <option>Admin</option>
+                <option>User</option>
+                <option>Guest</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Users Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <template x-for="user in filteredUsers" :key="user.id">
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <h3 class="text-lg font-semibold mb-2" x-text="user.name"></h3>
+                <p class="text-gray-600 mb-4" x-text="user.email"></p>
+                <div class="flex items-center text-sm text-gray-500">
+                    <span x-text="user.role"></span>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('userApp', () => ({
+            searchQuery: '',
+            filters: {
+                role: ''
+            },
+            users: [
+                // Sample data - replace with actual data
+                { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin' },
+                { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User' },
+                { id: 3, name: 'Sam Wilson', email: 'sam@example.com', role: 'Guest' }
+            ],
+            get filteredUsers() {
+                return this.users.filter(user => {
+                    return (this.searchQuery === '' || user.name.toLowerCase().includes(this.searchQuery.toLowerCase())) &&
+                           (this.filters.role === '' || user.role === this.filters.role);
+                });
+            },
+            performSearch() {
+                console.log('Searching:', this.searchQuery, this.filters);
+            }
+        }))
+    })
+</script>
+{% endblock %}

@@ -46,4 +46,16 @@ async def auth(request: Request, authorization: str = Header(None)):
     #         pass
     return templates.TemplateResponse("auth.html", {"request": request})
 
+@router.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@router.get("/users", response_class=HTMLResponse)
+async def users(request: Request):
+    return templates.TemplateResponse("users.html", {"request": request})
+
+@router.get("/guides", response_class=HTMLResponse)
+async def guides(request: Request):
+    return templates.TemplateResponse("guides.html", {"request": request})
+
 
