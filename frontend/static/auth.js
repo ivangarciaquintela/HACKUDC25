@@ -69,3 +69,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+async function handleLogout(event) {
+    event.preventDefault();
+    try {
+        const response = await fetch('/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'  // Required for cookies
+        });
+        
+        // Always redirect to auth page after logout attempt
+        window.location.href = '/auth';
+    } catch (error) {
+        console.error('Logout failed:', error);
+        // Still redirect to auth page even if there's an error
+        window.location.href = '/auth';
+    }
+}

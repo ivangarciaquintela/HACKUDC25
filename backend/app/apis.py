@@ -110,6 +110,44 @@ async def login(
     )
     return response
 
+@router.post("/logout")
+async def logout():
+    response = RedirectResponse(url="/auth", status_code=status.HTTP_303_SEE_OTHER)
+    
+    # Clear all possible authentication cookies
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="lax"
+    )
+    response.delete_cookie(
+        key="session",
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="lax"
+    )
+    response.delete_cookie(
+        key="Authorization",
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="lax"
+    )
+    
+    # Also set cookies to expire immediately as a backup
+    response.set_cookie(
+        key="access_token",
+        value="",
+        expires=0,
+        max_age=0,
+        path="/"
+    )
+    
+    return response
+
 @router.get("/skills/search")
 async def search_skills(
     q: Optional[str] = None,
