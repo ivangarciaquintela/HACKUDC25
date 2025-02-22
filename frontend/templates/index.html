@@ -12,6 +12,11 @@
             <h1>Technical Skills Registry</h1>
             <div class="nav-links" id="navLinks">
                 <!-- Links will be dynamically updated based on auth status -->
+                <a href="/">Home</a>
+                <a href="/search.html">Search Skills</a>
+                <a href="/users.html">Users</a>
+                <a href="/profile.html">Profile</a>
+                <a href="#" id="logoutLink">Logout</a>
             </div>
         </nav>
     </header>
@@ -45,6 +50,7 @@
                         <a href="/search.html">Search Skills</a>
                         <a href="/skills.html">My Skills</a>
                         <a href="/profile.html">Profile</a>
+                        <a href="/users.html">Users</a>
                         <a href="#" id="logoutLink">Logout</a>
                     `;
                     welcomeMessage.textContent = `Welcome back, ${token}!`;

@@ -223,6 +223,79 @@ async def get_skill_details(skill_id: str, db: Session = Depends(get_db)):
         skill
     ))
 
+@app.get("/users/search")
+async def search_users(
+    q: Optional[str] = None,
+    skill: Optional[str] = None,
+    min_level: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    # Start with base query
+    query = db.query(
+        User.username,
+        User.created_at,
+        func.count(UserSkill.skill_id).label('total_skills')
+    ).outerjoin(UserSkill)
+    
+    # Apply search filter
+    if q:
+        query = query.filter(User.username.ilike(f"%{q}%"))
+    
+    # First group to get total skills
+    query = query.group_by(User.id, User.username, User.created_at)
+    
+    # Execute main query
+    users = query.all()
+    
+    # For each user, get their top skills
+    result = []
+    for user in users:
+        # Get top skills for user (highest proficiency)
+        top_skills_query = db.query(
+            Skill.name,
+            UserSkill.proficiency_level
+        ).join(
+            UserSkill, Skill.id == UserSkill.skill_id
+        ).join(
+            User, User.id == UserSkill.user_id
+        ).filter(
+            User.username == user.username
+        )
+        
+        # Apply skill filter if provided
+        if skill:
+            top_skills_query = top_skills_query.filter(Skill.name == skill)
+        
+        # Apply minimum level filter if provided
+        if min_level:
+            top_skills_query = top_skills_query.filter(UserSkill.proficiency_level >= min_level)
+            # Skip user if they don't meet the minimum level requirement
+            if not top_skills_query.first():
+                continue
+        
+        top_skills = top_skills_query.order_by(
+            UserSkill.proficiency_level.desc()
+        ).limit(3).all()
+        
+        # Skip user if they don't have the required skill
+        if skill and not top_skills:
+            continue
+        
+        result.append({
+            "username": user.username,
+            "created_at": user.created_at,
+            "total_skills": user.total_skills,
+            "top_skills": [
+                {
+                    "name": skill.name,
+                    "proficiency_level": skill.proficiency_level
+                }
+                for skill in top_skills
+            ]
+        })
+    
+    return result
+
 @app.get("/users/{username}")
 async def get_user_profile(username: str, db: Session = Depends(get_db)):
     user = db.query(
@@ -272,4 +345,4 @@ async def get_user_skills(username: str, db: Session = Depends(get_db)):
             "last_used_date": skill.last_used_date
         }
         for skill in user_skills
-    ] 
+    ]
