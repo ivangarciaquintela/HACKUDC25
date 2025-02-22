@@ -543,14 +543,14 @@ async def query_agent(request: QueryRequest):
 @app.get("/users/{username}/issues")
 async def get_user_issues(
     username: str,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Verify user is accessing their own issues
-    if username != current_user.username:
+    # Get the user
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
         raise HTTPException(
-            status_code=403,
-            detail="You can only view your own issues"
+            status_code=404,
+            detail="User not found"
         )
 
     issues = db.query(
@@ -563,7 +563,7 @@ async def get_user_issues(
     ).join(
         Skill, Issue.skill_id == Skill.id
     ).filter(
-        Issue.user_id == current_user.id
+        Issue.user_id == user.id
     ).order_by(
         Issue.created_at.desc()
     ).all()
@@ -658,14 +658,14 @@ async def delete_user_issue(
 @app.get("/users/{username}/guides")
 async def get_user_guides(
     username: str,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Verify user is accessing their own guides
-    if username != current_user.username:
+    # Get the user
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
         raise HTTPException(
-            status_code=403,
-            detail="You can only view your own guides"
+            status_code=404,
+            detail="User not found"
         )
 
     guides = db.query(
@@ -678,7 +678,7 @@ async def get_user_guides(
     ).join(
         Skill, Guide.skill_id == Skill.id
     ).filter(
-        Guide.user_id == current_user.id
+        Guide.user_id == user.id
     ).order_by(
         Guide.created_at.desc()
     ).all()

@@ -40,6 +40,20 @@
                     <!-- Skills will be displayed here -->
                 </div>
             </div>
+
+            <div class="guides-section">
+                <h3>Guides</h3>
+                <div class="guides-grid" id="guidesGrid">
+                    <!-- Guides will be displayed here -->
+                </div>
+            </div>
+
+            <div class="issues-section">
+                <h3>Issues</h3>
+                <div class="issues-grid" id="issuesGrid">
+                    <!-- Issues will be displayed here -->
+                </div>
+            </div>
         </div>
     </main>
 
@@ -60,6 +74,8 @@
 
             loadUserProfile(username);
             loadUserSkills(username);
+            loadUserGuides(username);
+            loadUserIssues(username);
         });
 
         async function loadUserProfile(username) {
@@ -169,6 +185,79 @@
             
             displaySkills(filteredSkills);
         }
+
+        async function loadUserGuides(username) {
+            try {
+                const response = await fetch(`http://localhost:8000/users/${username}/guides`);
+                const guides = await response.json();
+                
+                const guidesGrid = document.getElementById('guidesGrid');
+                
+                if (guides.length === 0) {
+                    guidesGrid.innerHTML = '<p class="no-guides">No guides created yet.</p>';
+                    return;
+                }
+
+                guidesGrid.innerHTML = guides.map(guide => `
+                    <div class="guide-card">
+                        <h4>${guide.title}</h4>
+                        <div class="guide-content">${marked.parse(guide.content)}</div>
+                        <div class="guide-meta">
+                            <span class="guide-skill">
+                                Skill: ${guide.skill_name} ${guide.skill_version ? `(${guide.skill_version})` : ''}
+                            </span>
+                            <span class="guide-date">
+                                Created: ${new Date(guide.created_at).toLocaleDateString()}
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading user guides:', error);
+                document.getElementById('guidesGrid').innerHTML = `
+                    <div class="error-message">
+                        Error loading guides. Please try again later.
+                    </div>
+                `;
+            }
+        }
+
+        async function loadUserIssues(username) {
+            try {
+                const response = await fetch(`http://localhost:8000/users/${username}/issues`);
+                const issues = await response.json();
+                
+                const issuesGrid = document.getElementById('issuesGrid');
+                
+                if (issues.length === 0) {
+                    issuesGrid.innerHTML = '<p class="no-issues">No issues reported yet.</p>';
+                    return;
+                }
+
+                issuesGrid.innerHTML = issues.map(issue => `
+                    <div class="issue-card">
+                        <h4>${issue.title}</h4>
+                        <div class="issue-content">${issue.description}</div>
+                        <div class="issue-meta">
+                            <span class="issue-skill">
+                                Skill: ${issue.skill_name} ${issue.skill_version ? `(${issue.skill_version})` : ''}
+                            </span>
+                            <span class="issue-date">
+                                Created: ${new Date(issue.created_at).toLocaleDateString()}
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading user issues:', error);
+                document.getElementById('issuesGrid').innerHTML = `
+                    <div class="error-message">
+                        Error loading issues. Please try again later.
+                    </div>
+                `;
+            }
+        }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </body>
 </html> 
