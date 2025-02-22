@@ -164,36 +164,40 @@
 
         async function loadSkillGuides(skillId) {
             try {
-                const response = await fetch(`http://localhost:8000/skills/${skillId}/guides`);
-                const guides = await response.json();
-                
-                // Display guides
-                const guidesGrid = document.getElementById('guidesGrid');
-                
-                if (guides.length === 0) {
-                    guidesGrid.innerHTML = '<p class="no-guides">No guides available for this skill yet.</p>';
-                    return;
-                }
+            const response = await fetch(`http://localhost:8000/skills/${skillId}/guides`);
+            const guides = await response.json();
+            
+            // Display guides
+            const guidesGrid = document.getElementById('guidesGrid');
+            
+            if (guides.length === 0) {
+                guidesGrid.innerHTML = '<p class="no-guides">No guides available for this skill yet.</p>';
+                return;
+            }
 
-                guidesGrid.innerHTML = guides.map(guide => `
-                    <div class="guide-card">
-                        <h4>${guide.title}</h4>
-                        <div class="guide-content">${marked.parse(guide.content)}</div>
-                        <div class="guide-meta">
-                            <span class="guide-author">
-                                By: <a href="/user-profile.html?username=${guide.username}" class="user-link">${guide.username}</a>
-                            </span>
-                            <span class="guide-date">${new Date(guide.created_at).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                `).join('');
+            // TODO {marked.parse(guide.content)}
+            guidesGrid.innerHTML = guides.map(guide => `
+                <div class="guide-card">
+                <h4>
+                    <a href="/guide.html?id=${guide.id}" class="guide-link">${guide.title}</a>
+                </h4>
+                <div class="guide-content">${guide.content}</div>
+                <div class="guide-meta">
+                    <span class="guide-author">
+                    By: <a href="/user-profile.html?username=${guide.username}" class="user-link">${guide.username}</a>
+                    </span>
+                    <span class="guide-date">${new Date(guide.created_at).toLocaleDateString()}</span>
+                </div>
+                </div>
+            `).join('');
+            
             } catch (error) {
-                console.error('Error loading skill guides:', error);
-                document.getElementById('guidesGrid').innerHTML = `
-                    <div class="error-message">
-                        Error loading guides. Please try again later.
-                    </div>
-                `;
+            console.error('Error loading skill guides:', error);
+            document.getElementById('guidesGrid').innerHTML = `
+                <div class="error-message">
+                Error loading guides. Please try again later.
+                </div>
+            `;
             }
         }
 

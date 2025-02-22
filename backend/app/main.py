@@ -769,3 +769,34 @@ async def delete_user_guide(
     db.commit()
 
     return {"message": "Guide deleted successfully"}
+
+@app.get("/guides/{guide_id}")
+async def get_guide_details(guide_id: str, db: Session = Depends(get_db)):
+    guide = db.query(
+        Guide.id,
+        Guide.title,
+        Guide.content,
+        Guide.created_at,
+        Skill.name.label('skill_name'),
+        Skill.version.label('skill_version'),
+        User.username
+    ).join(
+        Skill, Guide.skill_id == Skill.id
+    ).join(
+        User, Guide.user_id == User.id
+    ).filter(
+        Guide.id == guide_id
+    ).first()
+
+    if not guide:
+        raise HTTPException(status_code=404, detail="Guide not found")
+
+    return {
+        "id": str(guide.id),
+        "title": guide.title,
+        "content": guide.content,
+        "created_at": guide.created_at,
+        "skill_name": guide.skill_name,
+        "skill_version": guide.skill_version,
+        "username": guide.username
+    }

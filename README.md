@@ -79,3 +79,13 @@ For production deployment, make sure to:
 ## Database Diagram
 
 ![alt text](database/model_diagram.png)
+
+
+## De la charla de Gradiant
+
+- Reconocimiento de items similares (vectorizar+cosine distance??) 
+- entrada natural language para input de items
+- Comprobar si en lo de los formularios se crean las skillls nuevas
+- ontología / taxonomía de skills. si sabes de un item hijo infiere que sabes de un ítem padre
+- ranking de conocimentos: sumas de profficiency de los items por ej?? para saber quien sabe más de un tema
+- 

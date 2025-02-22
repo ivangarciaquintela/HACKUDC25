@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Details - Technical Skills Registry</title>
+    <link rel="stylesheet" href="/static/style.css">    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div id="guideContent">
+        <div class="guide-details" style="display: none;">
+            <h2 id="guideTitle"></h2>
+            <div class="guide-meta">
+                <span class="guide-author">
+                    By: <a href="#" id="guideAuthor" class="user-link"></a>
+                </span>
+                <span class="guide-date" id="guideDate"></span>
+            </div>
+            <div class="guide-content" id="guideMarkdownContent"></div>
+            <div class="guide-content-two" id="guideMarkdownContentTwo"></div>
+        </div>
+        <div class="error-message" style="display: none;" id="errorMessage">
+            Guide not found. Please try again later.
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Get guide ID from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const guideId = urlParams.get('id');
+            
+            if (!guideId) {
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+
+            loadGuideById(guideId);
+        });
+
+        async function loadGuideById(guideId) {
+            try {
+                const response = await fetch(`http://localhost:8000/guides/${guideId}`);
+                const guide = await response.json();
+                
+                // Display guide content
+                document.getElementById('guideTitle').textContent = guide.title;
+                document.getElementById('guideAuthor').textContent = guide.username;
+                document.getElementById('guideAuthor').href = `/user-profile.html?username=${guide.username}`;
+                document.getElementById('guideDate').textContent = new Date(guide.created_at).toLocaleDateString();
+                document.getElementById('guideMarkdownContent').innerHTML = guide.content;
+
+                document.querySelector('.guide-details').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading guide:', error);
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
