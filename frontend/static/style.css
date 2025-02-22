@@ -246,6 +246,24 @@ main {
     font-size: 1rem;
 }
 
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.form-group textarea:focus,
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
 /* Message Styles */
 .message {
     margin-top: 1rem;
@@ -665,4 +683,198 @@ footer {
 
 .view-profile-btn:hover {
     background-color: #27ae60;
+}
+
+/* Skills Management Page Styles */
+.skills-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.search-skills-section {
+    margin-bottom: 20px;
+}
+
+.section-divider {
+    text-align: center;
+    margin: 30px 0;
+    position: relative;
+}
+
+.section-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #ddd;
+    z-index: 1;
+}
+
+.section-divider span {
+    background-color: #fff;
+    padding: 0 15px;
+    color: #666;
+    position: relative;
+    z-index: 2;
+}
+
+.search-results {
+    margin-top: 15px;
+}
+
+.search-result-item {
+    background: #f8f9fa;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s;
+}
+
+.search-result-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.search-result-item .skill-info {
+    flex: 1;
+}
+
+.search-result-item .skill-actions {
+    margin-left: 15px;
+}
+
+.search-result-item h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+.search-result-item .description {
+    color: #666;
+    font-size: 0.9em;
+    margin: 5px 0;
+}
+
+.add-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.add-btn:hover {
+    background: #218838;
+}
+
+.no-results {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 15px;
+}
+
+.error {
+    color: #dc3545;
+    text-align: center;
+    padding: 15px;
+}
+
+.new-skill-section {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.new-skill-section h4 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.add-skill-section,
+.current-skills-section {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.skill-item {
+    background: #f8f9fa;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    position: relative;
+}
+
+.skill-item h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.skill-item .version {
+    font-size: 0.8em;
+    color: #666;
+    margin-left: 8px;
+}
+
+.skill-item .category {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 8px;
+    padding: 2px 8px;
+    background-color: #f0f0f0;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.skill-item p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+}
+
+.skills-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: #0056b3;
 } 
