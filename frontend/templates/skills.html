@@ -7,18 +7,12 @@
     <div class="max-w-3xl mx-auto mb-6 flex flex-wrap gap-4">
         {% include "search-bar.html" %}
         
-        <select class="rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm" x-model="filters.category">
+        <select id="categorySelect" class="rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm" x-model="filters.category">
             <option value="">All Categories</option>
-            <option value="Development">Development</option>
-            <option value="Design">Design</option>
-            <option value="Marketing">Marketing</option>
         </select>
 
-        <select class="rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm" x-model="filters.version">
+        <select id="versionSelect" class="rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm" x-model="filters.version">
             <option value="">All Versions</option>
-            <option value="1.0">1.0</option>
-            <option value="2.0">2.0</option>
-            <option value="3.0">3.0</option>
         </select>
     </div>
 
@@ -63,5 +57,25 @@
             }
         }))
     })
+
+    // Fetch categories and populate the dropdown
+    async function fetchCategories() {
+        try {
+            const response = await fetch('http://localhost:8000/skills/categories');
+            const categories = await response.json();
+            const categorySelect = document.getElementById('categorySelect');
+
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
+    }
+
+    fetchCategories();
 </script>
 {% endblock %}
