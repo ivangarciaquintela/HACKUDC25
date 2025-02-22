@@ -567,4 +567,102 @@ footer {
 .user-link:hover {
     color: #3498db;
     text-decoration: underline;
+}
+
+/* Users List Page */
+.users-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.users-container h2 {
+    color: #2c3e50;
+    margin-bottom: 2rem;
+}
+
+.search-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.skill-select, .level-select {
+    min-width: 200px;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.users-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.user-list-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: grid;
+    gap: 1rem;
+}
+
+.user-info h3 {
+    margin-bottom: 0.5rem;
+}
+
+.user-skills-preview h4 {
+    color: #666;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.skill-tag {
+    background-color: #f8f9fa;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.skill-level {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.total-skills {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.skills-count {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.view-profile-btn {
+    background-color: #2ecc71;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.view-profile-btn:hover {
+    background-color: #27ae60;
 } 

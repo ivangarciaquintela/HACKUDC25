@@ -33,6 +33,8 @@ async def get_current_user(authorization: str = Header(None), db: Session = Depe
             detail="Not authenticated"
         )
     token = authorization.split(" ")[1]
+    
+    # Simple token validation - just check if a user with this username exists
     user = db.query(User).filter(User.username == token).first()
     if not user:
         raise HTTPException(
