@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Details - Technical Skills Registry</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>Technical Skills Registry</h1>
+            <div class="nav-links" id="navLinks">
+                <a href="/">Home</a>
+                <a href="/search.html">Search Skills</a>
+                <a href="/profile.html">Profile</a>
+                <a href="#" id="logoutLink">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="skill-details-container">
+            <div class="skill-header">
+                <h2 id="skillName"></h2>
+                <span class="version" id="skillVersion"></span>
+                <div class="category" id="skillCategory"></div>
+            </div>
+            
+            <div class="skill-description" id="skillDescription"></div>
+            
+            <div class="skill-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Total Users:</span>
+                    <span class="stat-value" id="totalUsers">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Average Proficiency:</span>
+                    <span class="stat-value" id="avgProficiency">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Average Experience:</span>
+                    <span class="stat-value" id="avgExperience">0 years</span>
+                </div>
+            </div>
+
+            <div class="users-section">
+                <h3>Users with this skill</h3>
+                <div class="users-grid" id="usersGrid"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Technical Skills Registry</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get skill ID from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const skillId = urlParams.get('id');
+            
+            if (!skillId) {
+                window.location.href = '/search.html';
+                return;
+            }
+
+            // Load skill details
+            loadSkillDetails(skillId);
+            loadSkillUsers(skillId);
+        });
+
+        async function loadSkillDetails(skillId) {
+            try {
+                const response = await fetch(`http://localhost:8000/skills/${skillId}`);
+                const skill = await response.json();
+                
+                // Update basic info
+                document.getElementById('skillName').textContent = skill.name;
+                document.getElementById('skillVersion').textContent = skill.version || '';
+                document.getElementById('skillCategory').textContent = skill.category || '';
+                document.getElementById('skillDescription').textContent = skill.description || '';
+
+                // Update statistics
+                document.getElementById('totalUsers').textContent = skill.user_count || 0;
+                document.getElementById('avgProficiency').textContent = 
+                    skill.avg_proficiency ? skill.avg_proficiency.toFixed(1) : '0';
+                document.getElementById('avgExperience').textContent = 
+                    skill.avg_experience ? `${skill.avg_experience.toFixed(1)} years` : '0 years';
+
+            } catch (error) {
+                console.error('Error loading skill details:', error);
+                // Show error message to user
+                document.querySelector('.skill-details-container').innerHTML = `
+                    <div class="error-message">
+                        Error loading skill details. Please try again later.
+                    </div>
+                `;
+            }
+        }
+
+        async function loadSkillUsers(skillId) {
+            try {
+                const response = await fetch(`http://localhost:8000/skills/${skillId}/users`);
+                const users = await response.json();
+                
+                // Display users
+                const usersGrid = document.getElementById('usersGrid');
+                
+                if (users.length === 0) {
+                    usersGrid.innerHTML = '<p class="no-users">No users have this skill yet.</p>';
+                    return;
+                }
+
+                usersGrid.innerHTML = users.map(user => `
+                    <div class="user-card">
+                        <h4>
+                            <a href="/user-profile.html?username=${user.username}" class="user-link">
+                                ${user.username}
+                            </a>
+                        </h4>
+                        <div class="user-stats">
+                            <div class="user-stat">
+                                <span class="stat-label">Proficiency:</span>
+                                <span class="stat-value">${user.proficiency_level}/5</span>
+                            </div>
+                            <div class="user-stat">
+                                <span class="stat-label">Experience:</span>
+                                <span class="stat-value">${user.years_experience} years</span>
+                            </div>
+                            ${user.last_used_date ? `
+                            <div class="user-stat">
+                                <span class="stat-label">Last Used:</span>
+                                <span class="stat-value">${new Date(user.last_used_date).toLocaleDateString()}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading skill users:', error);
+                document.getElementById('usersGrid').innerHTML = `
+                    <div class="error-message">
+                        Error loading users. Please try again later.
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -116,7 +116,9 @@
                     <p class="category">${skill.category}</p>
                     <p class="description">${skill.description}</p>
                     <p class="users-count">${skill.user_count} user(s)</p>
-                    <button onclick="showUsers('${skill.id}', '${skill.name}')" class="view-users-btn">View Users</button>
+                    <div class="skill-card-actions">
+                        <a href="/skill.html?id=${skill.id}" class="details-link">View Details</a>
+                    </div>
                 `;
                 grid.appendChild(card);
             });

@@ -168,19 +168,106 @@ async def get_skill_users(
     db: Session = Depends(get_db)
 ):
     users = db.query(
-        "users.username",
-        "user_skills.proficiency_level",
-        "user_skills.years_experience"
+        User.username,
+        UserSkill.proficiency_level,
+        UserSkill.years_experience,
+        UserSkill.last_used_date
     ).join(
-        "user_skills",
-        "users.id == user_skills.user_id"
+        UserSkill,
+        User.id == UserSkill.user_id
     ).filter(
-        "user_skills.skill_id == :skill_id"
-    ).params(skill_id=skill_id).all()
+        UserSkill.skill_id == skill_id
+    ).all()
     
-    return [dict(u) for u in users]
+    return [
+        {
+            "username": user.username,
+            "proficiency_level": user.proficiency_level,
+            "years_experience": user.years_experience,
+            "last_used_date": user.last_used_date
+        }
+        for user in users
+    ]
 
 @app.get("/skills/categories")
 async def get_categories(db: Session = Depends(get_db)):
     categories = db.query(Skill.category).distinct().all()
-    return [c[0] for c in categories if c[0]] 
+    return [c[0] for c in categories if c[0]]
+
+@app.get("/skills/{skill_id}")
+async def get_skill_details(skill_id: str, db: Session = Depends(get_db)):
+    skill = db.query(
+        Skill.id,
+        Skill.name,
+        Skill.version,
+        Skill.description,
+        Skill.category,
+        func.count(UserSkill.user_id.distinct()).label('user_count'),
+        func.avg(UserSkill.proficiency_level).label('avg_proficiency'),
+        func.avg(UserSkill.years_experience).label('avg_experience')
+    ).outerjoin(UserSkill).filter(Skill.id == skill_id).group_by(
+        Skill.id,
+        Skill.name,
+        Skill.version,
+        Skill.description,
+        Skill.category
+    ).first()
+    
+    if not skill:
+        raise HTTPException(status_code=404, detail="Skill not found")
+    
+    return dict(zip(
+        ['id', 'name', 'version', 'description', 'category', 'user_count', 'avg_proficiency', 'avg_experience'],
+        skill
+    ))
+
+@app.get("/users/{username}")
+async def get_user_profile(username: str, db: Session = Depends(get_db)):
+    user = db.query(
+        User.username,
+        User.email,
+        User.created_at
+    ).filter(User.username == username).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {
+        "username": user.username,
+        "email": user.email,
+        "created_at": user.created_at
+    }
+
+@app.get("/users/{username}/skills")
+async def get_user_skills(username: str, db: Session = Depends(get_db)):
+    user_skills = db.query(
+        Skill.id.label('skill_id'),
+        Skill.name,
+        Skill.version,
+        Skill.category,
+        UserSkill.proficiency_level,
+        UserSkill.years_experience,
+        UserSkill.last_used_date
+    ).join(
+        UserSkill, Skill.id == UserSkill.skill_id
+    ).join(
+        User, User.id == UserSkill.user_id
+    ).filter(
+        User.username == username
+    ).order_by(
+        Skill.category,
+        Skill.name
+    ).all()
+    
+    return [
+        {
+            "skill_id": skill.skill_id,
+            "name": skill.name,
+            "version": skill.version,
+            "category": skill.category,
+            "proficiency_level": skill.proficiency_level,
+            "years_experience": skill.years_experience,
+            "last_used_date": skill.last_used_date
+        }
+        for skill in user_skills
+    ] 
