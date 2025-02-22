@@ -86,8 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
             message.style.color = 'red';
             message.textContent = 'Error connecting to server';
         }
-    });
-
+    }); 
     // Handle logout
     document.getElementById('logoutLink').addEventListener('click', function(e) {
         e.preventDefault();

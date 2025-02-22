@@ -31,6 +31,7 @@
     </div>
 </div>
 
+<script src="/static/getElements.js"></script>
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('skillApp', () => ({
@@ -39,12 +40,16 @@
                 category: '',
                 version: ''
             },
-            skills: [
-                // Sample data - replace with actual data
-                { id: 1, name: 'Python', version: '3.9', description: 'A high-level programming language.', category: 'Development' },
-                { id: 2, name: 'JavaScript', version: 'ES6', description: 'A versatile scripting language.', category: 'Development' },
-                { id: 3, name: 'Photoshop', version: '2021', description: 'A powerful image editing software.', category: 'Design' }
-            ],
+            skills: [],
+            async fetchSkills() {
+                try {
+                    const response = await fetch('http://localhost:8000/skills/search');
+                    const skills = await response.json();
+                    this.skills = skills;
+                } catch (error) {
+                    console.error('Error fetching skills:', error);
+                }
+            },
             get filteredSkills() {
                 return this.skills.filter(skill => {
                     return (this.searchQuery === '' || skill.name.toLowerCase().includes(this.searchQuery.toLowerCase())) &&
@@ -54,13 +59,16 @@
             },
             performSearch() {
                 console.log('Searching:', this.searchQuery, this.filters);
+            },
+            init() {
+                this.fetchSkills();
+                fetchCategories(); // Call the function from getElements.js
             }
         }))
     })
 
-    // Fetch categories and populate the dropdown
-    async function fetchCategories() {
-        try {
+    async function fetchCategories() { // TODO move this to getElements
+        try {   
             const response = await fetch('http://localhost:8000/skills/categories');
             const categories = await response.json();
             const categorySelect = document.getElementById('categorySelect');
@@ -74,8 +82,6 @@
         } catch (error) {
             console.error('Error fetching categories:', error);
         }
-    }
-
-    fetchCategories();
+    }  
 </script>
 {% endblock %}
