@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Issues - Technical Skills Registry</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>Technical Skills Registry</h1>
+            <div class="nav-links" id="navLinks">
+                <a href="/">Home</a>
+                <a href="/search.html">Search Skills</a>
+                <a href="/users.html">Users</a>
+                <a href="/profile.html">Profile</a>
+                <a href="#" id="logoutLink">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="form-container Guides-container">
+            <h2>Manage Guides</h2>
+            
+            <!-- Add Guide Section -->
+            <div class="add-guide-section">
+                <h3>Add New Guide</h3>
+                <form id="addIssueForm">
+                    <div class="form-group">
+                        <label for="issueTitle">Guide Title:</label>
+                        <input type="text" id="issueTitle" name="issueTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="issueDescription">Guide Description:</label>
+                        <textarea id="issueDescription" name="issueDescription" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="skillId">Skill ID:</label>
+                        <select id="skillId" name="skillId" required>
+                            <option value="" disabled selected>Select a skill</option>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+
+                    <button type="submit">Add New Guide</button>
+                </form>
+                <p id="message" class="message"></p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Technical Skills Registry</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Fetch skills and populate the dropdown
+            async function fetchSkills() {
+                try {
+                    const response = await fetch('http://localhost:8000/skills/search');
+                    const skills = await response.json();
+                    const skillSelect = document.getElementById('skillId');
+
+                    skills.forEach(skill => {
+                        const option = document.createElement('option');
+                        option.value = skill.id;
+                        option.textContent = `${skill.name} (v${skill.version})`;
+                        skillSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error fetching skills:', error);
+                }
+            }
+
+            fetchSkills();
+
+            // Handle new guide submission
+            document.getElementById('addIssueForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const message = document.getElementById('message');
+
+                try {
+                    const response = await fetch(`http://localhost:8000/guides`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            title: formData.get('issueTitle'),
+                            description: formData.get('issueDescription'),
+                            skill_id: formData.get('skillId'),
+                            user_id: token
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        message.style.color = 'green';
+                        message.textContent = 'Guide added successfully';
+                        this.reset();
+                    } else {
+                        message.style.color = 'red';
+                        message.textContent = data.detail || 'Error adding Guide';
+                    }
+                } catch (error) {
+                    message.style.color = 'red';
+                    message.textContent = 'Error connecting to server';
+                }
+            });
+
+            // Handle logout
+            document.getElementById('logoutLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('token');
+                window.location.href = '/';
+            });
+        });
+    </script>
+</body>
+</html>
