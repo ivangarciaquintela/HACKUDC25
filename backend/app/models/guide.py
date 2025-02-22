@@ -11,7 +11,7 @@ class Guide(Base):
     skill_id = Column(UUID(as_uuid=True), ForeignKey("skills.id", ondelete="CASCADE"))
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
     title = Column(String, nullable=False)
-    guide_text = Column(Text, nullable=False)
+    content = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
 

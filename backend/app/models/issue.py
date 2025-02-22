@@ -11,7 +11,7 @@ class Issue(Base):
     skill_id = Column(UUID(as_uuid=True), ForeignKey("skills.id", ondelete="CASCADE"))
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
     title = Column(String, nullable=False)
-    issue_description = Column(Text, nullable=False)
+    description = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
 
@@ -26,7 +26,7 @@ class Comment(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     issue_id = Column(UUID(as_uuid=True), ForeignKey("issues.id", ondelete="CASCADE"))
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"))
-    comment_text = Column(Text, nullable=False)
+    content = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), default=func.now())
 
     issue = relationship("Issue", back_populates="comments")

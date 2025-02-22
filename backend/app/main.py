@@ -8,6 +8,8 @@ from datetime import datetime
 from typing import Optional, List
 from .database.database import get_db
 from .models.user import User
+from .models.guide import Guide
+from .models.issue import Issue
 from .models.skill import Skill
 from .models.user_skill import UserSkill
 
@@ -189,6 +191,66 @@ async def get_skill_users(
             "last_used_date": user.last_used_date
         }
         for user in users
+    ]
+
+@app.get("/skills/{skill_id}/guides")
+async def get_skill_guides(
+    skill_id: str,
+    db: Session = Depends(get_db)
+):
+    guides = db.query(
+        Guide.id,
+        Guide.title,
+        Guide.content,
+        Guide.created_at,
+        User.id.label("user_id"),
+        User.username
+    ).join(
+        User, Guide.user_id == User.id
+    ).filter(
+        Guide.skill_id == skill_id
+    ).all()
+    
+    return [
+        {
+            "id": guide.id,
+            "title": guide.title,
+            "content": guide.content,
+            "created_at": guide.created_at,
+            "user_id": guide.user_id,
+            "username": guide.username
+        }
+        for guide in guides
+    ]
+
+@app.get("/skills/{skill_id}/issues")
+async def get_skill_issues(
+    skill_id: str,
+    db: Session = Depends(get_db)
+):
+    issues = db.query(
+        Issue.id,
+        Issue.title,
+        Issue.description,
+        Issue.created_at,
+        User.id.label("user_id"),
+        User.username
+    ).join(
+        User, Issue.user_id == User.id
+    ).filter(
+        Issue.skill_id == skill_id
+    ).all()
+    
+    return [
+        {
+            "id": issue.id,
+            "title": issue.title,
+            "description": issue.description,
+            "created_at": issue.created_at,
+            "user_id": issue.user_id,
+            "username": issue.username
+        }
+        for issue in issues
     ]
 
 @app.get("/skills/categories")

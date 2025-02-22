@@ -1,66 +1,3 @@
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- Users table
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Skills table
-CREATE TABLE skills (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(100) NOT NULL,
-    version VARCHAR(50),
-    description TEXT,
-    category VARCHAR(100),
-    UNIQUE(name, version)
-);
-
--- User Skills junction table
-CREATE TABLE user_skills (
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    skill_id UUID REFERENCES skills(id) ON DELETE CASCADE,
-    proficiency_level INTEGER CHECK (proficiency_level BETWEEN 1 AND 5),
-    years_experience NUMERIC(4,1),
-    last_used_date DATE,
-    PRIMARY KEY (user_id, skill_id)
-);
-
--- Issues table
-CREATE TABLE issues (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    skill_id UUID REFERENCES skills(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    title VARCHAR(255) NOT NULL,
-    issue_description TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Comments table for issues
-CREATE TABLE comments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    issue_id UUID REFERENCES issues(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    comment_text TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Guides table
-CREATE TABLE guides (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    skill_id UUID REFERENCES skills(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    title VARCHAR(255) NOT NULL,
-    guide_text TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Insert test users (password for all users is 'password123')
 INSERT INTO users (username, email, password_hash, created_at) VALUES
     ('john_dev', 'john@example.com', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNZoLUYH4ex3G', NOW()),
@@ -133,5 +70,37 @@ SELECT u.id, s.id, 5, 5.0, CURRENT_DATE
 FROM users u, skills s
 WHERE u.username = 'mike_devops' AND s.name IN ('Docker', 'Kubernetes', 'AWS', 'Jenkins', 'Git');
 
-   
+-- Insert example issues
+INSERT INTO issues (skill_id, user_id, title, description, created_at, updated_at)
+SELECT s.id, u.id, 'How to handle async operations in React?', 'I am having trouble handling async operations in React. Can someone help?', NOW(), NOW()
+FROM skills s, users u
+WHERE s.name = 'React' AND s.version = '18.0' AND u.username = 'john_dev';
+
+INSERT INTO issues (skill_id, user_id, title, description, created_at, updated_at)
+SELECT s.id, u.id, 'Best practices for Dockerfile', 'What are some best practices for writing Dockerfiles?', NOW(), NOW()
+FROM skills s, users u
+WHERE s.name = 'Docker' AND s.version = 'latest' AND u.username = 'mike_devops';
+
+-- Insert example comments
+INSERT INTO comments (issue_id, user_id, content, created_at)
+SELECT i.id, u.id, 'You can use async/await to handle async operations in React.', NOW()
+FROM issues i, users u
+WHERE i.title = 'How to handle async operations in React?' AND u.username = 'maria_tech';
+
+INSERT INTO comments (issue_id, user_id, content, created_at)
+SELECT i.id, u.id, 'Make sure to minimize the number of layers in your Dockerfile.', NOW()
+FROM issues i, users u
+WHERE i.title = 'Best practices for Dockerfile' AND u.username = 'alex_data';
+
+-- Insert example guides
+INSERT INTO guides (skill_id, user_id, title, content, created_at, updated_at)
+SELECT s.id, u.id, 'Getting Started with React', '# Getting Started with React\n\nReact is a JavaScript library for building user interfaces. To get started, you need to install React and create a new project...', NOW(), NOW()
+FROM skills s, users u
+WHERE s.name = 'React' AND s.version = '18.0' AND u.username = 'sara_web';
+
+INSERT INTO guides (skill_id, user_id, title, content, created_at, updated_at)
+SELECT s.id, u.id, 'Docker Basics', '# Docker Basics\n\nDocker is a platform for developing, shipping, and running applications. This guide will help you get started with Docker...', NOW(), NOW()
+FROM skills s, users u
+WHERE s.name = 'Docker' AND s.version = 'latest' AND u.username = 'mike_devops';
+  
    
