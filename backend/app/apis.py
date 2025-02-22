@@ -10,9 +10,14 @@ from .models.user_skill import UserSkill
 from .models.user import User
 from .models.guide import Guide
 from .models.issue import Issue
+from .models.issue import Comment
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
+from .agents.db_agent import db_agent
+from .agents.issue_agent import issue_creation_agent
+from .agents.guide_agent import guide_creation_agent
 
 router = APIRouter()
 
@@ -109,6 +114,78 @@ async def login(
         max_age=1800    # 30 minutes
     )
     return response
+
+@router.post("/logout")
+async def logout():
+    response = RedirectResponse(url="/auth", status_code=status.HTTP_303_SEE_OTHER)
+    
+    # Clear all possible authentication cookies
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="lax"
+    )
+    response.delete_cookie(
+        key="session",
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="lax"
+    )
+    response.delete_cookie(
+        key="Authorization",
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="lax"
+    )
+    
+    # Also set cookies to expire immediately as a backup
+    response.set_cookie(
+        key="access_token",
+        value="",
+        expires=0,
+        max_age=0,
+        path="/"
+    )
+    
+    return response
+
+@router.get("/profile")
+async def get_profile(current_user: User = Depends(get_current_user)):
+    return {
+        "username": current_user.username,
+        "email": current_user.email
+    }
+
+@router.put("/profile")
+async def update_profile(
+    email: str = Form(...),
+    new_password: str = Form(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Check if email is taken by another user
+    existing_user = db.query(User).filter(User.email == email).first()
+    if existing_user and existing_user.id != current_user.id:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
+    
+    # Update user
+    current_user.email = email
+    if new_password:
+        current_user.password_hash = pwd_context.hash(new_password)
+    
+    db.commit()
+    return {"message": "Profile updated successfully"}
+
+@router.get("/")
+async def root():
+    return {"message": "Welcome to Technical Skills Registry API"}
 
 @router.get("/skills/search")
 async def search_skills(
@@ -493,6 +570,30 @@ async def delete_user_skill(
     
     return {"message": "Skill deleted successfully"}
 
+class QueryRequest(BaseModel):
+    query: str
+
+@router.post("/agent/query")
+async def query_agent(request: QueryRequest):
+    """
+    Endpoint to query the database using natural language through an AI agent.
+    The agent will convert the natural language query into SQL and execute it.
+    
+    Args:
+        request: QueryRequest containing the natural language query
+        
+    Returns:
+        The agent's response containing the query results
+    """
+    try:
+        response = db_agent.run(request.query)
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing query: {str(e)}"
+        )
+
 @router.get("/users/{username}/issues")
 async def get_user_issues(
     username: str,
@@ -752,4 +853,153 @@ async def get_guide_details(guide_id: str, db: Session = Depends(get_db)):
         "skill_name": guide.skill_name,
         "skill_version": guide.skill_version,
         "username": guide.username
+    }
+
+@router.get("/issues/{issue_id}")
+async def get_issue_details(issue_id: str, db: Session = Depends(get_db)):
+    issue = db.query(
+        Issue.id,
+        Issue.title,
+        Issue.description,
+        Issue.created_at,
+        Skill.name.label('skill_name'),
+        Skill.version.label('skill_version'),
+        User.username
+    ).join(
+        Skill, Issue.skill_id == Skill.id
+    ).join(
+        User, Issue.user_id == User.id
+    ).filter(
+        Issue.id == issue_id
+    ).first()
+
+    if not issue:
+        raise HTTPException(status_code=404, detail="Issue not found")
+
+    return {
+        "id": str(issue.id),
+        "title": issue.title,
+        "description": issue.description,
+        "created_at": issue.created_at,
+        "skill_name": issue.skill_name,
+        "skill_version": issue.skill_version,
+        "username": issue.username
+    }
+
+class NaturalLanguageIssueRequest(BaseModel):
+    description: str
+
+@router.post("/agent/create_issue")
+async def create_issue_with_agent(
+    request: NaturalLanguageIssueRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Endpoint to create a new issue using natural language through an AI agent.
+    The agent will extract the necessary information and create the issue.
+    
+    Args:
+        request: NaturalLanguageIssueRequest containing the natural language description
+        current_user: The authenticated user creating the issue
+        
+    Returns:
+        The agent's response containing the created issue details
+    """
+    try:
+        # Add user context to the request
+        augmented_request = f"User '{current_user.id}' wants to create an issue: {request.description}"
+        response = issue_creation_agent.run(augmented_request)
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error creating issue: {str(e)}"
+        )
+
+class NaturalLanguageGuideRequest(BaseModel):
+    description: str
+
+@router.post("/agent/create_guide")
+async def create_guide_with_agent(
+    request: NaturalLanguageGuideRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Endpoint to create a new learning guide using natural language through an AI agent.
+    The agent will structure the content and create a well-organized guide.
+    
+    Args:
+        request: NaturalLanguageGuideRequest containing the natural language description
+        current_user: The authenticated user creating the guide
+        
+    Returns:
+        The agent's response containing the created guide details
+    """
+    try:
+        # Add user context to the request
+        augmented_request = f"User '{current_user.id}' wants to create a guide: {request.description}"
+        response = guide_creation_agent.run(augmented_request)
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error creating guide: {str(e)}"
+        )
+
+@router.get("/issues/{issue_id}/comments")
+async def get_issue_comments(issue_id: str, db: Session = Depends(get_db)):
+    comments = db.query(
+        Comment.id,
+        Comment.content,
+        Comment.created_at,
+        User.username
+    ).join(
+        User, Comment.user_id == User.id
+    ).filter(
+        Comment.issue_id == issue_id
+    ).order_by(
+        Comment.created_at.asc()
+    ).all()
+
+    return [
+        {
+            "id": str(comment.id),
+            "content": comment.content,
+            "created_at": comment.created_at,
+            "username": comment.username
+        }
+        for comment in comments
+    ]
+
+@router.post("/issues/{issue_id}/comments")
+async def create_issue_comment(
+    issue_id: str,
+    content: str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Verify issue exists
+    issue = db.query(Issue).filter(Issue.id == issue_id).first()
+    if not issue:
+        raise HTTPException(
+            status_code=404,
+            detail="Issue not found"
+        )
+
+    # Create new comment
+    new_comment = Comment(
+        content=content,
+        issue_id=issue_id,
+        user_id=current_user.id
+    )
+
+    db.add(new_comment)
+    db.commit()
+    db.refresh(new_comment)
+
+    return {
+        "id": str(new_comment.id),
+        "content": new_comment.content,
+        "created_at": new_comment.created_at,
+        "username": current_user.username
     }

@@ -17,25 +17,31 @@
                             Skill <span class="bg-orange-500 text-black rounded-lg px-1 py-1">Hub</span>
                         </a>
                     </div>
+                    {% if show_nav|default(true) %}
                     <div class="hidden md:ml-6 md:flex md:space-x-8">
                         <a x-on:click="activeView = 'issues'" href="/issues" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Issues</a>
                         <a x-on:click="activeView = 'guides'" href="/guides" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Guides</a>
                         <a x-on:click="activeView = 'users'" href="/users" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Users</a>
                         <a x-on:click="activeView = 'skills'" href="/skills" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Skills</a>
+                        <a x-on:click="activeView = 'agent'" href="/agent" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Agent</a>
                         <a href="/myProfile" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">My Profile</a>
                     </div>
+                    {% endif %}
                 </div>
+                {% if show_nav|default(true) %}
                 <div class="flex items-center">
-                    <button @click="darkMode = !darkMode" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <span x-show="!darkMode" class="text-gray-700">🌙</span>
-                        <span x-show="darkMode" class="text-white">☀️</span>
+                    <button onclick="handleLogout(event)" 
+                       class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                        Logout
                     </button>
                 </div>
+                {% endif %}
             </div>
         </div>
     </nav>
     <div class="container mx-auto mt-20">
         {% block content %}{% endblock %}
     </div>
+    <script src="/static/auth.js"></script>
 </body>
 </html>

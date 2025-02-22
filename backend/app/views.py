@@ -78,5 +78,7 @@ async def guides(request: Request):
 async def guides(request: Request):
     return templates.TemplateResponse("myProfile.html", {"request": request})
 
-
+@router.get("/agent", response_class=HTMLResponse)
+async def guides(request: Request):
+    return templates.TemplateResponse("agent.html", {"request": request})
 
