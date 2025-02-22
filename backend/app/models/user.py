@@ -3,6 +3,10 @@ from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from ..database.database import Base
 from sqlalchemy.orm import relationship
+# Ensure all dependent classes are imported
+from .skill import Skill
+from .issue import Issue, Comment
+from .guide import Guide
 
 class User(Base):
     __tablename__ = "users"
@@ -13,6 +17,7 @@ class User(Base):
     password_hash = Column(String)
     created_at = Column(DateTime(timezone=True))
 
-    # Add these relationships
-    created_skills = relationship("Skill", back_populates="creator")
-    skills = relationship("Skill", secondary="user_skills", back_populates="users") 
+    skills = relationship("Skill", secondary="user_skills", back_populates="users")
+    issues = relationship("Issue", back_populates="user")
+    comments = relationship("Comment", back_populates="user")
+    guides = relationship("Guide", back_populates="user")

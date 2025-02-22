@@ -17,8 +17,6 @@ CREATE TABLE skills (
     version VARCHAR(50),
     description TEXT,
     category VARCHAR(100),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    created_by UUID REFERENCES users(id),
     UNIQUE(name, version)
 );
 
@@ -30,6 +28,37 @@ CREATE TABLE user_skills (
     years_experience NUMERIC(4,1),
     last_used_date DATE,
     PRIMARY KEY (user_id, skill_id)
+);
+
+-- Issues table
+CREATE TABLE issues (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    skill_id UUID REFERENCES skills(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    title VARCHAR(255) NOT NULL,
+    issue_description TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Comments table for issues
+CREATE TABLE comments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    issue_id UUID REFERENCES issues(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    comment_text TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Guides table
+CREATE TABLE guides (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    skill_id UUID REFERENCES skills(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    title VARCHAR(255) NOT NULL,
+    guide_text TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Insert test users (password for all users is 'password123')
