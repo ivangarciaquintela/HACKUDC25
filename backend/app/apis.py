@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header, Query, Form
+from jose import JWTError, jwt
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from typing import Optional
@@ -9,30 +11,43 @@ from .models.user import User
 from .models.guide import Guide
 from .models.issue import Issue
 from passlib.context import CryptContext
-from datetime import datetime
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import RedirectResponse
 
 router = APIRouter()
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# JWT Configuration
+SECRET_KEY = "your-secret-key-here"  # Change this in production!
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
 # Helper function to get current user
 async def get_current_user(authorization: str = Header(None), db: Session = Depends(get_db)):
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated"
-        )
-    token = authorization.split(" ")[1]
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials"
+    )
+    try:
+        payload = jwt.decode(authorization, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
     
-    # Simple token validation - just check if a user with this username exists
-    user = db.query(User).filter(User.username == token).first()
+    user = db.query(User).filter(User.username == username).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
-        )
+        raise credentials_exception
     return user
 
 @router.post("/register")
@@ -82,10 +97,18 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    return {
-        "access_token": user.username,
-        "token_type": "bearer"
-    }
+    access_token = create_access_token(data={"sub": user.username})
+    
+    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,  # Prevents JavaScript access
+        secure=True,    # Only send over HTTPS
+        samesite="lax", # CSRF protection
+        max_age=1800    # 30 minutes
+    )
+    return response
 
 @router.get("/skills/search")
 async def search_skills(

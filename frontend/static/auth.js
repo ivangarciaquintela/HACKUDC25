@@ -12,25 +12,28 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const response = await fetch('http://localhost:8000/login', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'include' // Important for cookies
                 });
-
-                const data = await response.json();
                 
-                if (response.ok) {
-                    localStorage.setItem('token', data.access_token);
+                if (response.ok || response.status === 303) {
                     loginMessage.style.color = 'green';
                     loginMessage.textContent = 'Login successful!';
+                    // Small delay to show the success message
                     setTimeout(() => {
                         window.location.href = '/';
-                    }, 1000);
+                    }, 500);
                 } else {
+                    const data = await response.json();
                     loginMessage.style.color = 'red';
                     loginMessage.textContent = data.detail || 'Login failed';
                 }
             } catch (error) {
-                loginMessage.style.color = 'red';
-                loginMessage.textContent = 'Error connecting to server';
+                // Only show error if we haven't already started redirecting
+                if (!loginMessage.textContent.includes('successful')) {
+                    loginMessage.style.color = 'red';
+                    loginMessage.textContent = 'Error connecting to server';
+                }
             }
         });
     }
