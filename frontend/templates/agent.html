@@ -47,7 +47,7 @@
                             <ul>
                                 <li>"Show me all users who know Python with proficiency level 4 or higher"</li>
                                 <li>"What are the most popular skills in the database?"</li>
-                                <li>"List all skills in the Framworks category"</li>
+                                <li>"List all skills in the Frameworks category"</li>
                             </ul>
                         </p>
                         
@@ -69,7 +69,11 @@
 
                         <div id="resultArea" class="d-none">
                             <h4>Results:</h4>
-                            <pre id="queryResult" class="bg-light p-3 rounded"></pre>
+                            <div id="queryResult" class="bg-light p-3 rounded">
+                                <div id="formattedResponse"></div>
+                                <pre id="rawResponse" class="d-none"></pre>
+                                <button class="btn btn-sm btn-secondary mt-2" onclick="toggleRawResponse()">Toggle Raw JSON</button>
+                            </div>
                         </div>
 
                         <div id="errorArea" class="alert alert-danger d-none" role="alert">
@@ -141,7 +145,60 @@
                 }
                 
                 resultArea.classList.remove('d-none');
-                queryResult.textContent = JSON.stringify(data, null, 2);
+                const formattedResponse = document.getElementById('formattedResponse');
+                const rawResponse = document.getElementById('rawResponse');
+                
+                // Format the response based on its content
+                if (data.response) {
+                    try {
+                        // Parse the JSON string in data.response
+                        const parsedResults = JSON.parse(data.response);
+                        
+                        if (Array.isArray(parsedResults)) {
+                            if (parsedResults.length === 0) {
+                                formattedResponse.textContent = 'No results found';
+                            } else {
+                                // Create a table if the results are objects with properties
+                                if (typeof parsedResults[0] === 'object') {
+                                    const headers = Object.keys(parsedResults[0]);
+                                    formattedResponse.innerHTML = `
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    ${headers.map(header => `<th>${header}</th>`).join('')}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${parsedResults.map(item => `
+                                                    <tr>
+                                                        ${headers.map(header => `<td>${item[header]}</td>`).join('')}
+                                                    </tr>
+                                                `).join('')}
+                                            </tbody>
+                                        </table>
+                                    `;
+                                } else {
+                                    // For arrays of primitive values, display as a list
+                                    formattedResponse.innerHTML = `
+                                        <ul class="list-group">
+                                            ${parsedResults.map(item => `<li class="list-group-item">${item}</li>`).join('')}
+                                        </ul>`;
+                                }
+                            }
+                        } else {
+                            // Handle single result
+                            formattedResponse.textContent = JSON.stringify(parsedResults, null, 2);
+                        }
+                    } catch (e) {
+                        // If parsing fails, display as plain text
+                        formattedResponse.textContent = data.response;
+                    }
+                } else {
+                    formattedResponse.textContent = 'No results found';
+                }
+                
+                // Store raw response
+                rawResponse.textContent = JSON.stringify(data, null, 2);
             } catch (error) {
                 errorArea.classList.remove('d-none');
                 errorArea.textContent = error.message;
@@ -150,6 +207,12 @@
                 submitBtn.disabled = false;
             }
         });
+
+        // Add toggle function for raw response
+        function toggleRawResponse() {
+            const rawResponse = document.getElementById('rawResponse');
+            rawResponse.classList.toggle('d-none');
+        }
 
         // Initialize page
         updateAuthNav();

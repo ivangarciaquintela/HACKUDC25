@@ -1,11 +1,15 @@
 from smolagents import tool, ToolCallingAgent, HfApiModel
 from sqlalchemy import text
+import yaml
 from ..database.database import SessionLocal
+
+with open("app/agents/agent_prompts.yaml", "r") as f:
+    prompt_templates = yaml.safe_load(f)
 
 @tool
 def sql_engine(query: str) -> str:
     """
-    Allows you to perform SQL queries on the database. Returns a JSON object with the results.
+    Allows you to perform SQL queries on the database. Returns a string representation of the result.
     The database has the following main tables:
     - users: User accounts with id (UUID), username, email, password_hash, created_at
     - skills: Technical skills with id (UUID), name, version, description, category
@@ -31,4 +35,5 @@ def sql_engine(query: str) -> str:
 db_agent = ToolCallingAgent(
     tools=[sql_engine],
     model=HfApiModel(token="***REMOVED***"),
+    prompt_templates=prompt_templates
 ) 
