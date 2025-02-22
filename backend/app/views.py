@@ -62,5 +62,9 @@ async def guides(request: Request):
 async def guides(request: Request):
     return templates.TemplateResponse("issues.html", {"request": request})
 
+@router.get("/skills", response_class=HTMLResponse)
+async def guides(request: Request):
+    return templates.TemplateResponse("skills.html", {"request": request})
+
 
 
