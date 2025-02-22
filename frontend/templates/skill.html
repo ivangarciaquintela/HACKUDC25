@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skill Details - Technical Skills Registry</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css">    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <header>
@@ -46,14 +47,24 @@
             </div>
 
             <div class="users-section">
-                <h3>Users with this skill</h3>
+                <h3>Users for this skill</h3>
                 <div class="users-grid" id="usersGrid"></div>
+            </div>
+
+            <div class="guides-section">
+                <h3>Guides for this skill</h3>
+                <div class="guides-grid" id="guidesGrid"></div>
+            </div>
+
+            <div class="issues-section">
+                <h3>Issues for this skill</h3>
+                <div class="issues-grid" id="issuesGrid"></div>
             </div>
         </div>
     </main>
 
     <footer>
-        <p>&copy; 2024 Technical Skills Registry</p>
+        <p>&copy; 2025 Technical Skills Registry</p>
     </footer>
 
     <script>
@@ -70,6 +81,8 @@
             // Load skill details
             loadSkillDetails(skillId);
             loadSkillUsers(skillId);
+            loadSkillGuides(skillId);
+            loadSkillIssues(skillId);
         });
 
         async function loadSkillDetails(skillId) {
@@ -148,6 +161,77 @@
                 `;
             }
         }
+
+        async function loadSkillGuides(skillId) {
+            try {
+                const response = await fetch(`http://localhost:8000/skills/${skillId}/guides`);
+                const guides = await response.json();
+                
+                // Display guides
+                const guidesGrid = document.getElementById('guidesGrid');
+                
+                if (guides.length === 0) {
+                    guidesGrid.innerHTML = '<p class="no-guides">No guides available for this skill yet.</p>';
+                    return;
+                }
+
+                guidesGrid.innerHTML = guides.map(guide => `
+                    <div class="guide-card">
+                        <h4>${guide.title}</h4>
+                        <div class="guide-content">${marked.parse(guide.content)}</div>
+                        <div class="guide-meta">
+                            <span class="guide-author">
+                                By: <a href="/user-profile.html?username=${guide.username}" class="user-link">${guide.username}</a>
+                            </span>
+                            <span class="guide-date">${new Date(guide.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading skill guides:', error);
+                document.getElementById('guidesGrid').innerHTML = `
+                    <div class="error-message">
+                        Error loading guides. Please try again later.
+                    </div>
+                `;
+            }
+        }
+
+        async function loadSkillIssues(skillId) {
+            try {
+                const response = await fetch(`http://localhost:8000/skills/${skillId}/issues`);
+                const issues = await response.json();
+                
+                // Display issues
+                const issuesList = document.getElementById('issuesGrid');
+                
+                if (issues.length === 0) {
+                    issuesList.innerHTML = '<p class="no-issues">No issues reported for this skill yet.</p>';
+                    return;
+                }
+
+                issuesList.innerHTML = issues.map(issue => `
+                    <div class="issue-card">
+                        <h4>${issue.title}</h4>
+                        <div class="issue-content">${issue.description}</div>
+                        <div class="issue-meta">
+                            <span class="issue-author">
+                                Reported by: <a href="/user-profile.html?username=${issue.username}" class="user-link">${issue.username}</a>
+                            </span>
+                            <span class="issue-date">${new Date(issue.created_at).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading skill issues:', error);
+                document.getElementById('issuesGrid').innerHTML = `
+                    <div class="error-message">
+                        Error loading issues. Please try again later.
+                    </div>
+                `;
+            }
+        }
+    
     </script>
 </body>
-</html> 
+</html>

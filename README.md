@@ -18,10 +18,16 @@ The services will be available at:
 - profile page
 - [ ] API to add and query stufff
 
+- fix logout
+
 - request partuicular skill
 - ultimas skills añadidas
 - Skill groups or paths (e.g., "Full Stack Developer" track)
 - Skill recommendations based on existing skills
+
+- Frontend:
+  - tab selected
+  - search bar updated when searching + enter for seaching
 
 ## Project Structure
 
