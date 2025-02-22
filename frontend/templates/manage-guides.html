@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Issues - Technical Skills Registry</title>
+    <title>Manage Guides - Technical Skills Registry</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -21,32 +21,33 @@
     </header>
 
     <main>
-        <div class="form-container Guides-container">
+        <div class="form-container guides-container">
             <h2>Manage Guides</h2>
             
             <!-- Add Guide Section -->
             <div class="add-guide-section">
                 <h3>Add New Guide</h3>
-                <form id="addIssueForm">
+                <form id="addGuideForm">
                     <div class="form-group">
-                        <label for="issueTitle">Guide Title:</label>
-                        <input type="text" id="issueTitle" name="issueTitle" required>
+                        <label for="guideTitle">Guide Title:</label>
+                        <input type="text" id="guideTitle" name="guideTitle" required>
                     </div>
                     <div class="form-group">
-                        <label for="issueDescription">Guide Description:</label>
-                        <textarea id="issueDescription" name="issueDescription" rows="3" required></textarea>
+                        <label for="guideContent">Guide Content:</label>
+                        <textarea id="guideContent" name="guideContent" rows="10" required></textarea>
+                        <small>You can use Markdown formatting</small>
                     </div>
                     <div class="form-group">
-                        <label for="skillId">Skill ID:</label>
+                        <label for="skillId">Skill:</label>
                         <select id="skillId" name="skillId" required>
                             <option value="" disabled selected>Select a skill</option>
                             <!-- Options will be populated dynamically -->
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="skillVersion">Skill ID:</label>
+                        <label for="skillVersion">Version:</label>
                         <select id="skillVersion" name="skillVersion" required>
-                            <option value="" disabled selected>Select a skill</option>
+                            <option value="" disabled selected>Select a version</option>
                             <!-- Options will be populated dynamically -->
                         </select>
                     </div>
@@ -55,6 +56,12 @@
                 </form>
                 <p id="message" class="message"></p>
             </div>
+
+            <!-- Current Guides List -->
+            <div class="current-guides-section">
+                <h3>My Current Guides</h3>
+                <div id="guidesList"></div>
+            </div>
         </div>
     </main>
 
@@ -62,7 +69,124 @@
         <p>&copy; 2024 Technical Skills Registry</p>
     </footer>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Load user's guides
+            function loadUserGuides() {
+                fetch(`http://localhost:8000/users/${token}/guides`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const guidesList = document.getElementById('guidesList');
+                    guidesList.innerHTML = '';
+                    
+                    data.forEach(guide => {
+                        const guideElement = document.createElement('div');
+                        guideElement.className = 'guide-item';
+                        guideElement.innerHTML = `
+                            <button onclick="deleteGuide('${guide.id}')" class="delete-btn">Delete</button>
+                            <h4>${guide.title}</h4>
+                            <div class="description">${guide.content}</div>
+                            <p>Skill: ${guide.skill_name} (${guide.skill_version})</p>
+                            <p class="guide-date">Created: ${new Date(guide.created_at).toLocaleDateString()}</p>
+                        `;
+                        guidesList.appendChild(guideElement);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('message').style.color = 'red';
+                    document.getElementById('message').textContent = 'Error loading guides';
+                });
+            }
+
+            // Delete guide function
+            window.deleteGuide = async function(guideId) {
+                if (!confirm('Are you sure you want to delete this guide?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`http://localhost:8000/users/${token}/guides/${guideId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        loadUserGuides();
+                        document.getElementById('message').style.color = 'green';
+                        document.getElementById('message').textContent = 'Guide deleted successfully';
+                    } else {
+                        document.getElementById('message').style.color = 'red';
+                        document.getElementById('message').textContent = 'Error deleting guide';
+                    }
+                } catch (error) {
+                    document.getElementById('message').style.color = 'red';
+                    document.getElementById('message').textContent = 'Error connecting to server';
+                }
+            };
+
+            // Handle new guide submission
+            document.getElementById('addGuideForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const message = document.getElementById('message');
+
+                try {
+                    const response = await fetch(`http://localhost:8000/users/${token}/guides`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            title: formData.get('guideTitle'),
+                            content: formData.get('guideContent'),
+                            skill_id: formData.get('skillId'),
+                            skill_version: formData.get('skillVersion')
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        message.style.color = 'green';
+                        message.textContent = 'Guide added successfully';
+                        this.reset();
+                        loadUserGuides();
+                    } else {
+                        message.style.color = 'red';
+                        message.textContent = data.detail || 'Error adding guide';
+                    }
+                } catch (error) {
+                    message.style.color = 'red';
+                    message.textContent = 'Error connecting to server';
+                }
+            });
+
+            // Handle logout
+            document.getElementById('logoutLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('token');
+                window.location.href = '/';
+            });
+
+            // Load guides on page load
+            loadUserGuides();
+        });
+    </script>
+
     <script src="/static/getElements.js"></script>
-  
 </body>
 </html>

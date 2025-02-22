@@ -1010,3 +1010,97 @@ footer {
   color: #3498db;
   text-decoration: underline;
 }
+
+/* Issue Items */
+.issue-item {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.issue-item h4 {
+    margin: 0 0 1rem 0;
+    color: #2c3e50;
+}
+
+.issue-item .description {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+    color: #666;
+}
+
+.issue-item .issue-date {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.issue-item .delete-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.issue-item .delete-btn:hover {
+    background-color: #c82333;
+}
+
+/* Guide Items in Manage Guides */
+.guide-item {
+    background: #f8f9fa;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    position: relative;
+}
+
+.guide-item h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    padding-right: 70px; /* Make room for delete button */
+}
+
+.guide-item .description {
+    color: #666;
+    margin-bottom: 10px;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.guide-item p {
+    margin: 5px 0;
+    color: #666;
+}
+
+.guide-item .guide-date {
+    font-size: 0.9em;
+    color: #888;
+}
+
+.guide-item .delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.guide-item .delete-btn:hover {
+    background: #c82333;
+}

@@ -539,3 +539,233 @@ async def query_agent(request: QueryRequest):
             status_code=500,
             detail=f"Error processing query: {str(e)}"
         )
+
+@app.get("/users/{username}/issues")
+async def get_user_issues(
+    username: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Verify user is accessing their own issues
+    if username != current_user.username:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only view your own issues"
+        )
+
+    issues = db.query(
+        Issue.id,
+        Issue.title,
+        Issue.description,
+        Issue.created_at,
+        Skill.name.label('skill_name'),
+        Skill.version.label('skill_version')
+    ).join(
+        Skill, Issue.skill_id == Skill.id
+    ).filter(
+        Issue.user_id == current_user.id
+    ).order_by(
+        Issue.created_at.desc()
+    ).all()
+
+    return [
+        {
+            "id": str(issue.id),
+            "title": issue.title,
+            "description": issue.description,
+            "created_at": issue.created_at,
+            "skill_name": issue.skill_name,
+            "skill_version": issue.skill_version
+        }
+        for issue in issues
+    ]
+
+@app.post("/users/{username}/issues")
+async def create_user_issue(
+    username: str,
+    issue_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Verify user is creating their own issue
+    if username != current_user.username:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only create issues for yourself"
+        )
+
+    # Get the skill
+    skill = db.query(Skill).filter(
+        Skill.id == issue_data['skill_id'],
+        Skill.version == issue_data['skill_version']
+    ).first()
+
+    if not skill:
+        raise HTTPException(
+            status_code=404,
+            detail="Skill not found"
+        )
+
+    # Create new issue
+    new_issue = Issue(
+        title=issue_data['title'],
+        description=issue_data['description'],
+        skill_id=skill.id,
+        user_id=current_user.id
+    )
+
+    db.add(new_issue)
+    db.commit()
+    db.refresh(new_issue)
+
+    return {
+        "message": "Issue created successfully",
+        "id": str(new_issue.id)
+    }
+
+@app.delete("/users/{username}/issues/{issue_id}")
+async def delete_user_issue(
+    username: str,
+    issue_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Verify user is deleting their own issue
+    if username != current_user.username:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only delete your own issues"
+        )
+
+    # Find the issue
+    issue = db.query(Issue).filter(
+        Issue.id == issue_id,
+        Issue.user_id == current_user.id
+    ).first()
+
+    if not issue:
+        raise HTTPException(
+            status_code=404,
+            detail="Issue not found"
+        )
+
+    # Delete the issue
+    db.delete(issue)
+    db.commit()
+
+    return {"message": "Issue deleted successfully"}
+
+@app.get("/users/{username}/guides")
+async def get_user_guides(
+    username: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Verify user is accessing their own guides
+    if username != current_user.username:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only view your own guides"
+        )
+
+    guides = db.query(
+        Guide.id,
+        Guide.title,
+        Guide.content,
+        Guide.created_at,
+        Skill.name.label('skill_name'),
+        Skill.version.label('skill_version')
+    ).join(
+        Skill, Guide.skill_id == Skill.id
+    ).filter(
+        Guide.user_id == current_user.id
+    ).order_by(
+        Guide.created_at.desc()
+    ).all()
+
+    return [
+        {
+            "id": str(guide.id),
+            "title": guide.title,
+            "content": guide.content,
+            "created_at": guide.created_at,
+            "skill_name": guide.skill_name,
+            "skill_version": guide.skill_version
+        }
+        for guide in guides
+    ]
+
+@app.post("/users/{username}/guides")
+async def create_user_guide(
+    username: str,
+    guide_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Verify user is creating their own guide
+    if username != current_user.username:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only create guides for yourself"
+        )
+
+    # Get the skill
+    skill = db.query(Skill).filter(
+        Skill.id == guide_data['skill_id'],
+        Skill.version == guide_data['skill_version']
+    ).first()
+
+    if not skill:
+        raise HTTPException(
+            status_code=404,
+            detail="Skill not found"
+        )
+
+    # Create new guide
+    new_guide = Guide(
+        title=guide_data['title'],
+        content=guide_data['content'],
+        skill_id=skill.id,
+        user_id=current_user.id
+    )
+
+    db.add(new_guide)
+    db.commit()
+    db.refresh(new_guide)
+
+    return {
+        "message": "Guide created successfully",
+        "id": str(new_guide.id)
+    }
+
+@app.delete("/users/{username}/guides/{guide_id}")
+async def delete_user_guide(
+    username: str,
+    guide_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Verify user is deleting their own guide
+    if username != current_user.username:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only delete your own guides"
+        )
+
+    # Find the guide
+    guide = db.query(Guide).filter(
+        Guide.id == guide_id,
+        Guide.user_id == current_user.id
+    ).first()
+
+    if not guide:
+        raise HTTPException(
+            status_code=404,
+            detail="Guide not found"
+        )
+
+    # Delete the guide
+    db.delete(guide)
+    db.commit()
+
+    return {"message": "Guide deleted successfully"}

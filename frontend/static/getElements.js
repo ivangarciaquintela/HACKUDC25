@@ -46,15 +46,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-
-    // Handle new guide submission
+    // Handle new issue submission
     document.getElementById('addIssueForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const formData = new FormData(this);
         const message = document.getElementById('message');
 
         try {
-            const response = await fetch(`http://localhost:8000/guides`, {
+            const response = await fetch(`http://localhost:8000/users/${token}/issues`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -64,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     title: formData.get('issueTitle'),
                     description: formData.get('issueDescription'),
                     skill_id: formData.get('skillId'),
+                    skill_version: formData.get('skillVersion'),
                     user_id: token
                 })
             });
@@ -72,11 +72,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (response.ok) {
                 message.style.color = 'green';
-                message.textContent = 'Guide added successfully';
+                message.textContent = 'Issue added successfully';
                 this.reset();
+                // Refresh the issues list
+                if (typeof loadUserIssues === 'function') {
+                    loadUserIssues();
+                }
             } else {
                 message.style.color = 'red';
-                message.textContent = data.detail || 'Error adding Guide';
+                message.textContent = data.detail || 'Error adding issue';
             }
         } catch (error) {
             message.style.color = 'red';

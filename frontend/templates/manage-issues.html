@@ -44,9 +44,9 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="skillVersion">Skill ID:</label>
+                        <label for="skillVersion">Skill Version:</label>
                         <select id="skillVersion" name="skillVersion" required>
-                            <option value="" disabled selected>Select a skill</option>
+                            <option value="" disabled selected>Select a version</option>
                             <!-- Options will be populated dynamically -->
                         </select>
                     </div>
@@ -55,12 +55,91 @@
                 </form>
                 <p id="message" class="message"></p>
             </div>
+
+            <!-- Current Issues List -->
+            <div class="current-issues-section">
+                <h3>My Current Issues</h3>
+                <div id="issuesList"></div>
+            </div>
         </div>
     </main>
 
     <footer>
         <p>&copy; 2024 Technical Skills Registry</p>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Load user's issues
+            function loadUserIssues() {
+                fetch(`http://localhost:8000/users/${token}/issues`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const issuesList = document.getElementById('issuesList');
+                    issuesList.innerHTML = '';
+                    
+                    data.forEach(issue => {
+                        const issueElement = document.createElement('div');
+                        issueElement.className = 'issue-item';
+                        issueElement.innerHTML = `
+                            <button onclick="deleteIssue('${issue.id}')" class="delete-btn">Delete</button>
+                            <h4>${issue.title}</h4>
+                            <p class="description">${issue.description}</p>
+                            <p>Skill: ${issue.skill_name} (${issue.skill_version})</p>
+                            <p class="issue-date">Created: ${new Date(issue.created_at).toLocaleDateString()}</p>
+                        `;
+                        issuesList.appendChild(issueElement);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('message').style.color = 'red';
+                    document.getElementById('message').textContent = 'Error loading issues';
+                });
+            }
+
+            // Delete issue function
+            window.deleteIssue = async function(issueId) {
+                if (!confirm('Are you sure you want to delete this issue?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`http://localhost:8000/users/${token}/issues/${issueId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        loadUserIssues();
+                        document.getElementById('message').style.color = 'green';
+                        document.getElementById('message').textContent = 'Issue deleted successfully';
+                    } else {
+                        document.getElementById('message').style.color = 'red';
+                        document.getElementById('message').textContent = 'Error deleting issue';
+                    }
+                } catch (error) {
+                    document.getElementById('message').style.color = 'red';
+                    document.getElementById('message').textContent = 'Error connecting to server';
+                }
+            };
+
+            // Load issues on page load
+            loadUserIssues();
+        });
+    </script>
 
     <script src="/static/getElements.js"></script>
     

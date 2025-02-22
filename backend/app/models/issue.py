@@ -15,7 +15,7 @@ class Issue(Base):
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
 
-    comments = relationship("Comment", back_populates="issue")
+    comments = relationship("Comment", back_populates="issue", cascade="all, delete-orphan")
     skill = relationship("Skill", back_populates="issues")
     user = relationship("User")
     
