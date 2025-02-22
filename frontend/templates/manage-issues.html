@@ -43,6 +43,13 @@
                             <!-- Options will be populated dynamically -->
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label for="skillVersion">Skill ID:</label>
+                        <select id="skillVersion" name="skillVersion" required>
+                            <option value="" disabled selected>Select a skill</option>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
 
                     <button type="submit">Add New Issue</button>
                 </form>
@@ -73,7 +80,7 @@
                     skills.forEach(skill => {
                         const option = document.createElement('option');
                         option.value = skill.id;
-                        option.textContent = `${skill.name} (v${skill.version})`;
+                        option.textContent = `${skill.name}`;
                         skillSelect.appendChild(option);
                     });
                 } catch (error) {
@@ -82,6 +89,27 @@
             }
 
             fetchSkills();
+
+            // Fetch versions based on selected skill and populate the dropdown
+            document.getElementById('skillId').addEventListener('change', async function() {
+                const skillName = this.options[this.selectedIndex].text;
+                const versionSelect = document.getElementById('skillVersion');
+                versionSelect.innerHTML = '<option value="" disabled selected>Select a version</option>'; // Reset version dropdown
+
+                try {
+                    const response = await fetch(`http://localhost:8000/skills/${skillName}/versions`);
+                    const versions = await response.json();
+
+                    versions.forEach(version => {
+                        const option = document.createElement('option');
+                        option.value = version;
+                        option.textContent = version;
+                        versionSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error fetching skill versions:', error);
+                }
+            });
 
             // Handle new issue submission
             document.getElementById('addIssueForm').addEventListener('submit', async function(e) {

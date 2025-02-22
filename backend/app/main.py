@@ -164,6 +164,10 @@ async def search_skills(
     results = query.all()
     return [dict(zip(['id', 'name', 'version', 'description', 'category', 'user_count'], r)) for r in results]
 
+@app.get("/skills/{skill_name}/versions")
+async def get_skill_versions(skill_name: str, db: Session = Depends(get_db)):
+    versions = db.query(Skill.version).filter(Skill.name == skill_name).distinct().all()
+    return [v[0] for v in versions if v[0]]
 
 @app.get("/skills/{skill_id}/users")
 async def get_skill_users(
