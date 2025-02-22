@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}My Profile - Technical Skills Registry{% endblock %}
+{% block content %}
+
+<div x-data="profileApp" class="container mx-auto mt-10">
+    <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-semibold mb-6">My Profile</h2>
+        
+        <div class="mb-4"></div>
+            <button @click="activeSection = 'username'" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow-md transition-colors">Edit Username</button>
+            <button @click="activeSection = 'email'" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow-md transition-colors">Edit Email</button>
+            <button @click="activeSection = 'password'" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow-md transition-colors">Edit Password</button>
+        </div>
+
+        <form @submit.prevent="updateProfile">
+            <div x-show="activeSection === 'username'" class="mb-4"></div>
+                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" id="username" x-model="profile.username" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+            
+            <div x-show="activeSection === 'email'" class="mb-4">
+                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                <input type="email" id="email" x-model="profile.email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+            
+            <div x-show="activeSection === 'password'" class="mb-4">
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" x-model="profile.password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+            </div>
+            
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md transition-colors">Update Profile</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('profileApp', () => ({
+            activeSection: '',  // Initially no section is active
+            profile: {
+                username: 'john_doe',  // Replace with actual data
+                email: 'john@example.com',  // Replace with actual data
+                password: ''
+            },
+            updateProfile() {
+                console.log('Updating profile:', this.profile);
+                // Add logic to update profile
+            }
+        }))
+    })
+</script>
+{% endblock %}

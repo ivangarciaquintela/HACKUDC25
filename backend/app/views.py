@@ -70,5 +70,13 @@ async def issues(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/auth", status_code=status.HTTP_303_SEE_OTHER)
     return templates.TemplateResponse("issues.html", {"request": request, "user": user})
 
+@router.get("/skills", response_class=HTMLResponse)
+async def guides(request: Request):
+    return templates.TemplateResponse("skills.html", {"request": request})
+
+@router.get("/myProfile", response_class=HTMLResponse)
+async def guides(request: Request):
+    return templates.TemplateResponse("myProfile.html", {"request": request})
+
 
 

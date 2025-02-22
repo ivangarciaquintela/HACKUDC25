@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Skills - Technical Skills Registry{% endblock %}
+{% block content %}
+
+<div x-data="skillApp" class="container mx-auto mt-10">
+    <!-- Search Bar -->
+    <div class="max-w-3xl mx-auto mb-6 flex flex-wrap gap-4">
+        {% include "search-bar.html" %}
+        
+        <select class="rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm" x-model="filters.category">
+            <option value="">All Categories</option>
+            <option value="Development">Development</option>
+            <option value="Design">Design</option>
+            <option value="Marketing">Marketing</option>
+        </select>
+
+        <select class="rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm" x-model="filters.version">
+            <option value="">All Versions</option>
+            <option value="1.0">1.0</option>
+            <option value="2.0">2.0</option>
+            <option value="3.0">3.0</option>
+        </select>
+    </div>
+
+    <!-- Skills Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <template x-for="skill in filteredSkills" :key="skill.id">
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <h3 class="text-lg font-semibold mb-2" x-text="skill.name"></h3>
+                <p class="text-gray-600 mb-4" x-text="skill.description"></p>
+                <div class="flex items-center text-sm text-gray-500 mb-2">
+                    <span>Version: <span x-text="skill.version"></span></span>
+                    <span class="ml-4">Category: <span x-text="skill.category"></span></span>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('skillApp', () => ({
+            searchQuery: '',
+            filters: {
+                category: '',
+                version: ''
+            },
+            skills: [
+                // Sample data - replace with actual data
+                { id: 1, name: 'Python', version: '3.9', description: 'A high-level programming language.', category: 'Development' },
+                { id: 2, name: 'JavaScript', version: 'ES6', description: 'A versatile scripting language.', category: 'Development' },
+                { id: 3, name: 'Photoshop', version: '2021', description: 'A powerful image editing software.', category: 'Design' }
+            ],
+            get filteredSkills() {
+                return this.skills.filter(skill => {
+                    return (this.searchQuery === '' || skill.name.toLowerCase().includes(this.searchQuery.toLowerCase())) &&
+                        (this.filters.category === '' || skill.category === this.filters.category) &&
+                        (this.filters.version === '' || skill.version === this.filters.version);
+                });
+            },
+            performSearch() {
+                console.log('Searching:', this.searchQuery, this.filters);
+            }
+        }))
+    })
+</script>
+{% endblock %}
