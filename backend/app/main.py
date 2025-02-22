@@ -6,12 +6,14 @@ from sqlalchemy import or_, text, func
 from passlib.context import CryptContext
 from datetime import datetime
 from typing import Optional, List
+from pydantic import BaseModel
 from .database.database import get_db
 from .models.user import User
 from .models.guide import Guide
 from .models.issue import Issue
 from .models.skill import Skill
 from .models.user_skill import UserSkill
+from .agents.db_agent import db_agent
 
 app = FastAPI(title="Technical Skills Registry API")
 
@@ -165,6 +167,11 @@ async def search_skills(
     
     results = query.all()
     return [dict(zip(['id', 'name', 'version', 'description', 'category', 'user_count'], r)) for r in results]
+
+@app.get("/skills/{skill_name}/versions")
+async def get_skill_versions(skill_name: str, db: Session = Depends(get_db)):
+    versions = db.query(Skill.version).filter(Skill.name == skill_name).distinct().all()
+    return [v[0] for v in versions if v[0]]
 
 @app.get("/skills/{skill_id}/users")
 async def get_skill_users(
@@ -508,3 +515,27 @@ async def delete_user_skill(
     db.commit()
     
     return {"message": "Skill deleted successfully"}
+
+class QueryRequest(BaseModel):
+    query: str
+
+@app.post("/agent/query")
+async def query_agent(request: QueryRequest):
+    """
+    Endpoint to query the database using natural language through an AI agent.
+    The agent will convert the natural language query into SQL and execute it.
+    
+    Args:
+        request: QueryRequest containing the natural language query
+        
+    Returns:
+        The agent's response containing the query results
+    """
+    try:
+        response = db_agent.run(request.query)
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing query: {str(e)}"
+        )
