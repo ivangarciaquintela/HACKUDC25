@@ -6,10 +6,12 @@ from sqlalchemy import or_, text, func
 from passlib.context import CryptContext
 from datetime import datetime
 from typing import Optional, List
+from pydantic import BaseModel
 from .database.database import get_db
 from .models.user import User
 from .models.skill import Skill
 from .models.user_skill import UserSkill
+from .agents.db_agent import db_agent
 
 app = FastAPI(title="Technical Skills Registry API")
 
@@ -447,3 +449,27 @@ async def delete_user_skill(
     db.commit()
     
     return {"message": "Skill deleted successfully"}
+
+class QueryRequest(BaseModel):
+    query: str
+
+@app.post("/agent/query")
+async def query_agent(request: QueryRequest):
+    """
+    Endpoint to query the database using natural language through an AI agent.
+    The agent will convert the natural language query into SQL and execute it.
+    
+    Args:
+        request: QueryRequest containing the natural language query
+        
+    Returns:
+        The agent's response containing the query results
+    """
+    try:
+        response = db_agent.run(request.query)
+        return {"response": response}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing query: {str(e)}"
+        )
