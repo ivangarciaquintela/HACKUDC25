@@ -346,3 +346,103 @@ async def get_user_skills(username: str, db: Session = Depends(get_db)):
         }
         for skill in user_skills
     ]
+
+@app.post("/users/{username}/skills")
+async def add_user_skill(
+    username: str,
+    skill_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Verify user is modifying their own skills
+    if username != current_user.username:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only modify your own skills"
+        )
+    
+    # Check if we're adding an existing skill or creating a new one
+    if 'skill_id' in skill_data:
+        # Adding an existing skill
+        skill = db.query(Skill).filter(Skill.id == skill_data['skill_id']).first()
+        if not skill:
+            raise HTTPException(
+                status_code=404,
+                detail="Skill not found"
+            )
+    else:
+        # Creating a new skill
+        # Check if skill exists with the same name and version
+        skill = db.query(Skill).filter(
+            Skill.name == skill_data['name'],
+            Skill.version == skill_data['version']
+        ).first()
+
+        if not skill:
+            # Create new skill with all provided information
+            skill = Skill(
+                name=skill_data['name'],
+                version=skill_data['version'],
+                category=skill_data['category'],
+                description=skill_data['description']
+            )
+            db.add(skill)
+            db.commit()
+            db.refresh(skill)
+    
+    # Check if user already has this skill
+    existing_skill = db.query(UserSkill).filter(
+        UserSkill.user_id == current_user.id,
+        UserSkill.skill_id == skill.id
+    ).first()
+    
+    if existing_skill:
+        raise HTTPException(
+            status_code=400,
+            detail="You already have this skill version"
+        )
+    
+    # Add skill to user
+    user_skill = UserSkill(
+        user_id=current_user.id,
+        skill_id=skill.id,
+        proficiency_level=skill_data['proficiency_level'],
+        years_experience=skill_data['years_experience'],
+        last_used_date=datetime.now()
+    )
+    
+    db.add(user_skill)
+    db.commit()
+    
+    return {"message": "Skill added successfully"}
+
+@app.delete("/users/{username}/skills/{skill_id}")
+async def delete_user_skill(
+    username: str,
+    skill_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Verify user is modifying their own skills
+    if username != current_user.username:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only modify your own skills"
+        )
+    
+    # Find and delete the user skill
+    user_skill = db.query(UserSkill).filter(
+        UserSkill.user_id == current_user.id,
+        UserSkill.skill_id == skill_id
+    ).first()
+    
+    if not user_skill:
+        raise HTTPException(
+            status_code=404,
+            detail="Skill not found"
+        )
+    
+    db.delete(user_skill)
+    db.commit()
+    
+    return {"message": "Skill deleted successfully"}

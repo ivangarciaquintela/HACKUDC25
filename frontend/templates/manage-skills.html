@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Skills - Technical Skills Registry</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <h1>Technical Skills Registry</h1>
+            <div class="nav-links" id="navLinks">
+                <a href="/">Home</a>
+                <a href="/search.html">Search Skills</a>
+                <a href="/users.html">Users</a>
+                <a href="/profile.html">Profile</a>
+                <a href="#" id="logoutLink">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="form-container skills-container">
+            <h2>Manage My Skills</h2>
+            
+            <!-- Add Skill Section -->
+            <div class="add-skill-section">
+                <h3>Add Skill</h3>
+                
+                <!-- Search Existing Skills -->
+                <div class="search-skills-section">
+                    <div class="form-group">
+                        <label for="skillSearch">Search Existing Skills:</label>
+                        <input type="text" id="skillSearch" placeholder="Type to search skills...">
+                    </div>
+                    <div id="searchResults" class="search-results"></div>
+                </div>
+
+                <div class="section-divider">
+                    <span>OR</span>
+                </div>
+
+                <!-- Add New Skill Form -->
+                <div class="new-skill-section">
+                    <h4>Create New Skill</h4>
+                    <form id="addSkillForm">
+                        <div class="form-group">
+                            <label for="skillName">Skill Name:</label>
+                            <input type="text" id="skillName" name="skillName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="skillVersion">Version:</label>
+                            <input type="text" id="skillVersion" name="skillVersion" placeholder="e.g., 1.0, 2023, Latest" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="skillCategory">Category:</label>
+                            <input type="text" id="skillCategory" name="skillCategory" placeholder="e.g., Programming, Design, DevOps" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="skillDescription">Description:</label>
+                            <textarea id="skillDescription" name="skillDescription" rows="3" placeholder="Brief description of the skill" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="proficiencyLevel">Proficiency Level:</label>
+                            <select id="proficiencyLevel" name="proficiencyLevel" required>
+                                <option value="1">Beginner</option>
+                                <option value="2">Intermediate</option>
+                                <option value="3">Advanced</option>
+                                <option value="4">Expert</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="yearsExperience">Years of Experience:</label>
+                            <input type="number" id="yearsExperience" name="yearsExperience" min="0" step="0.5" required>
+                        </div>
+                        <button type="submit">Add New Skill</button>
+                    </form>
+                </div>
+                <p id="message" class="message"></p>
+            </div>
+
+            <!-- Current Skills List -->
+            <div class="current-skills-section">
+                <h3>My Current Skills</h3>
+                <div id="skillsList"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Technical Skills Registry</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Debounce function for search
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            // Search existing skills
+            const searchSkills = debounce(async function(query) {
+                if (!query) {
+                    document.getElementById('searchResults').innerHTML = '';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`http://localhost:8000/skills/search?q=${encodeURIComponent(query)}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    const data = await response.json();
+                    const searchResults = document.getElementById('searchResults');
+                    searchResults.innerHTML = '';
+
+                    if (data.length === 0) {
+                        searchResults.innerHTML = '<p class="no-results">No existing skills found. You can create a new one below.</p>';
+                        return;
+                    }
+
+                    data.forEach(skill => {
+                        const skillElement = document.createElement('div');
+                        skillElement.className = 'search-result-item';
+                        skillElement.innerHTML = `
+                            <div class="skill-info">
+                                <h4>${skill.name} <span class="version">${skill.version || ''}</span></h4>
+                                <p class="category">${skill.category || 'Uncategorized'}</p>
+                                <p class="description">${skill.description || ''}</p>
+                            </div>
+                            <div class="skill-actions">
+                                <button onclick="addExistingSkill('${skill.id}')" class="add-btn">Add to My Skills</button>
+                            </div>
+                        `;
+                        searchResults.appendChild(skillElement);
+                    });
+                } catch (error) {
+                    console.error('Error:', error);
+                    document.getElementById('searchResults').innerHTML = '<p class="error">Error searching skills</p>';
+                }
+            }, 300);
+
+            // Add event listener for search input
+            document.getElementById('skillSearch').addEventListener('input', function(e) {
+                searchSkills(e.target.value);
+            });
+
+            // Function to add existing skill
+            window.addExistingSkill = async function(skillId) {
+                const proficiencyLevel = document.getElementById('proficiencyLevel').value;
+                const yearsExperience = document.getElementById('yearsExperience').value;
+                
+                if (!proficiencyLevel || !yearsExperience) {
+                    document.getElementById('message').style.color = 'red';
+                    document.getElementById('message').textContent = 'Please select proficiency level and years of experience';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`http://localhost:8000/users/${token}/skills`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            skill_id: skillId,
+                            proficiency_level: parseInt(proficiencyLevel),
+                            years_experience: parseFloat(yearsExperience)
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        document.getElementById('message').style.color = 'green';
+                        document.getElementById('message').textContent = 'Skill added successfully';
+                        document.getElementById('skillSearch').value = '';
+                        document.getElementById('searchResults').innerHTML = '';
+                        loadUserSkills();
+                    } else {
+                        document.getElementById('message').style.color = 'red';
+                        document.getElementById('message').textContent = data.detail || 'Error adding skill';
+                    }
+                } catch (error) {
+                    document.getElementById('message').style.color = 'red';
+                    document.getElementById('message').textContent = 'Error connecting to server';
+                }
+            };
+
+            // Load user's skills
+            function loadUserSkills() {
+                fetch(`http://localhost:8000/users/${token}/skills`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const skillsList = document.getElementById('skillsList');
+                    skillsList.innerHTML = '';
+                    
+                    data.forEach(skill => {
+                        const skillElement = document.createElement('div');
+                        skillElement.className = 'skill-item';
+                        skillElement.innerHTML = `
+                            <h4>${skill.name} <span class="version">${skill.version || ''}</span></h4>
+                            <p class="category">${skill.category || 'Uncategorized'}</p>
+                            <p>Proficiency: ${getProficiencyText(skill.proficiency_level)}</p>
+                            <p>Experience: ${skill.years_experience} years</p>
+                            <button onclick="deleteSkill('${skill.skill_id}')" class="delete-btn">Delete</button>
+                        `;
+                        skillsList.appendChild(skillElement);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('message').style.color = 'red';
+                    document.getElementById('message').textContent = 'Error loading skills';
+                });
+            }
+
+            // Helper function to convert proficiency level to text
+            function getProficiencyText(level) {
+                const proficiencyMap = {
+                    1: 'Beginner',
+                    2: 'Intermediate',
+                    3: 'Advanced',
+                    4: 'Expert'
+                };
+                return proficiencyMap[level] || 'Unknown';
+            }
+
+            // Handle new skill submission
+            document.getElementById('addSkillForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const message = document.getElementById('message');
+
+                try {
+                    const response = await fetch(`http://localhost:8000/users/${token}/skills`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: formData.get('skillName'),
+                            version: formData.get('skillVersion'),
+                            category: formData.get('skillCategory'),
+                            description: formData.get('skillDescription'),
+                            proficiency_level: parseInt(formData.get('proficiencyLevel')),
+                            years_experience: parseFloat(formData.get('yearsExperience'))
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        message.style.color = 'green';
+                        message.textContent = 'Skill added successfully';
+                        this.reset();
+                        loadUserSkills();
+                    } else {
+                        message.style.color = 'red';
+                        message.textContent = data.detail || 'Error adding skill';
+                    }
+                } catch (error) {
+                    message.style.color = 'red';
+                    message.textContent = 'Error connecting to server';
+                }
+            });
+
+            // Delete skill function
+            window.deleteSkill = async function(skillId) {
+                try {
+                    const response = await fetch(`http://localhost:8000/users/${token}/skills/${skillId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        loadUserSkills();
+                        document.getElementById('message').style.color = 'green';
+                        document.getElementById('message').textContent = 'Skill deleted successfully';
+                    } else {
+                        document.getElementById('message').style.color = 'red';
+                        document.getElementById('message').textContent = 'Error deleting skill';
+                    }
+                } catch (error) {
+                    document.getElementById('message').style.color = 'red';
+                    document.getElementById('message').textContent = 'Error connecting to server';
+                }
+            };
+
+            // Handle logout
+            document.getElementById('logoutLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.removeItem('token');
+                window.location.href = '/';
+            });
+
+            // Load skills on page load
+            loadUserSkills();
+        });
+    </script>
+</body>
+</html> 
