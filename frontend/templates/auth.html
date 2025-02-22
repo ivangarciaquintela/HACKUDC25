@@ -3,44 +3,52 @@
 {% block title %}Login or Sign Up{% endblock %}
 
 {% block content %}
-<div x-data="{ showLogin: true }">
+<div>
     <div class="flex justify-center">
-        <button @click="showLogin = true" class="px-4 py-2 bg-blue-500 text-white rounded">Login</button>
-        <button @click="showLogin = false" class="ml-4 px-4 py-2 bg-green-500 text-white rounded">Sign Up</button>
+        <button onclick="document.getElementById('loginForm').style.display = 'block'; document.getElementById('registerForm').style.display = 'none';" 
+                class="px-4 py-2 bg-blue-500 text-white rounded">Login</button>
+        <button onclick="document.getElementById('loginForm').style.display = 'none'; document.getElementById('registerForm').style.display = 'block';" 
+                class="ml-4 px-4 py-2 bg-green-500 text-white rounded">Sign Up</button>
     </div>
+
     <div class="mt-10">
-        <div x-show="showLogin">
+        <div id="loginForm" class="mt-4 max-w-md mx-auto bg-white p-6 rounded shadow">
             <h2 class="text-center text-2xl font-bold">Login</h2>
-            <form class="mt-4 max-w-md mx-auto bg-white p-6 rounded shadow" method="post" action="/api/login">
+            <form class="mt-4">
                 <div class="mb-4">
                     <label class="block text-gray-700">Username</label>
-                    <input type="text" name="username" class="w-full px-3 py-2 border rounded" placeholder="Enter your username">
+                    <input type="text" name="username" class="w-full px-3 py-2 border rounded" required>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700">Password</label>
-                    <input type="password" name="password" class="w-full px-3 py-2 border rounded" placeholder="Enter your password">
+                    <input type="password" name="password" class="w-full px-3 py-2 border rounded" required>
                 </div>
                 <button type="submit" class="w-full px-4 py-2 bg-blue-500 text-white rounded">Login</button>
+                <p id="loginMessage" class="mt-4 text-center message"></p>
             </form>
         </div>
-        <div x-show="!showLogin">
+
+        <div id="registerForm" style="display: none;" class="mt-4 max-w-md mx-auto bg-white p-6 rounded shadow">
             <h2 class="text-center text-2xl font-bold">Sign Up</h2>
-            <form class="mt-4 max-w-md mx-auto bg-white p-6 rounded shadow" method="post" action="/api/register">
+            <form class="mt-4">
                 <div class="mb-4">
                     <label class="block text-gray-700">Username</label>
-                    <input type="text" name="username" class="w-full px-3 py-2 border rounded" placeholder="Choose a username">
+                    <input type="text" name="username" class="w-full px-3 py-2 border rounded" required>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700">Email</label>
-                    <input type="email" name="email" class="w-full px-3 py-2 border rounded" placeholder="Enter your email">
+                    <input type="email" name="email" class="w-full px-3 py-2 border rounded" required>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700">Password</label>
-                    <input type="password" name="password" class="w-full px-3 py-2 border rounded" placeholder="Choose a password">
+                    <input type="password" name="password" class="w-full px-3 py-2 border rounded" required>
                 </div>
                 <button type="submit" class="w-full px-4 py-2 bg-green-500 text-white rounded">Sign Up</button>
+                <p id="registerMessage" class="mt-4 text-center message"></p>
             </form>
         </div>
     </div>
 </div>
+
+<script src="/static/auth.js"></script>
 {% endblock %}

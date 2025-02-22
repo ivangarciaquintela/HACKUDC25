@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Header, Query, Form
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from typing import Optional
@@ -37,9 +37,9 @@ async def get_current_user(authorization: str = Header(None), db: Session = Depe
 
 @router.post("/register")
 async def register(
-    username: str,
-    email: str,
-    password: str,
+    username: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
     db: Session = Depends(get_db)
 ):
     # Check if user exists

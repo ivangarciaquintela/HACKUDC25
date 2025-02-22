@@ -21,21 +21,9 @@ app.add_middleware(
 )
 
 router = APIRouter()
-templates_dir = "/app/templates"
 
-if not os.path.exists(templates_dir):
-    raise RuntimeError(f"Directory '{templates_dir}' does not exist")
-templates = Jinja2Templates(directory=templates_dir)
-
-print('Application setup complete.')  # Debug print
-
-@router.get("/mateo", response_class=HTMLResponse)
-async def auth(request: Request):
-    print('mateo.')  # Debug print
-    return templates.TemplateResponse("auth.html", {"request": request})
-
-# # Serve static files
-# app.mount("/static", StaticFiles(directory=static_dir), name="static")
+# Serve static files
+app.mount("/static", StaticFiles(directory="/app/static"), name="static")
 
 # Configure Jinja2 templates
 # templates = Jinja2Templates(directory=templates_dir)
@@ -43,6 +31,9 @@ async def auth(request: Request):
 # Include routers
 app.include_router(views_router)
 app.include_router(apis_router)
+
+# Add the main router to the app
+app.include_router(router)
 
 print('Application is running.')  # Debug print
 

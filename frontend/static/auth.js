@@ -1,12 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const message = document.getElementById('message');
+    const loginForm = document.querySelector('#loginForm form');
+    const registerForm = document.querySelector('#registerForm form');
+    const loginMessage = document.getElementById('loginMessage');
+    const registerMessage = document.getElementById('registerMessage');
 
     if (loginForm) {
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const formData = new FormData(loginForm);
+            const formData = new FormData(e.target);
             
             try {
                 const response = await fetch('http://localhost:8000/login', {
@@ -17,21 +18,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
                 
                 if (response.ok) {
-                    // Store the token
                     localStorage.setItem('token', data.access_token);
-                    message.style.color = 'green';
-                    message.textContent = 'Login successful!';
-                    // Redirect to home page after 1 second
+                    loginMessage.style.color = 'green';
+                    loginMessage.textContent = 'Login successful!';
                     setTimeout(() => {
                         window.location.href = '/';
                     }, 1000);
                 } else {
-                    message.style.color = 'red';
-                    message.textContent = data.detail || 'Login failed';
+                    loginMessage.style.color = 'red';
+                    loginMessage.textContent = data.detail || 'Login failed';
                 }
             } catch (error) {
-                message.style.color = 'red';
-                message.textContent = 'Error connecting to server';
+                loginMessage.style.color = 'red';
+                loginMessage.textContent = 'Error connecting to server';
             }
         });
     }
@@ -39,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (registerForm) {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const formData = new FormData(registerForm);
+            const formData = new FormData(e.target);
             
             try {
                 const response = await fetch('http://localhost:8000/register', {
@@ -50,20 +49,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 const data = await response.json();
                 
                 if (response.ok) {
-                    message.style.color = 'green';
-                    message.textContent = 'Registration successful! Redirecting to login...';
-                    // Redirect to login page after 1 second
+                    registerMessage.style.color = 'green';
+                    registerMessage.textContent = 'Registration successful! Redirecting to login...';
                     setTimeout(() => {
-                        window.location.href = '/login.html';
+                        document.getElementById('loginForm').style.display = 'block';
+                        document.getElementById('registerForm').style.display = 'none';
                     }, 1000);
                 } else {
-                    message.style.color = 'red';
-                    message.textContent = data.detail || 'Registration failed';
+                    registerMessage.style.color = 'red';
+                    registerMessage.textContent = data.detail || 'Registration failed';
                 }
             } catch (error) {
-                message.style.color = 'red';
-                message.textContent = 'Error connecting to server';
+                registerMessage.style.color = 'red';
+                registerMessage.textContent = 'Error connecting to server';
             }
         });
     }
-}); 
+});

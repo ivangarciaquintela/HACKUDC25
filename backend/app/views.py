@@ -16,27 +16,34 @@ if not os.path.exists(templates_dir):
     raise RuntimeError(f"Directory '{templates_dir}' does not exist")
 templates = Jinja2Templates(directory=templates_dir)
 
-print('Views setup complete.')  # Debug print
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# @router.get("/", response_class=HTMLResponse)
-# async def read_root(request: Request, db: Session = Depends(get_db), authorization: str = Header(None)):
-#     # Debug prints
-#     print(f"Checking if directory exists: {templates_dir}")
-#     print(f"Absolute path: {os.path.abspath(templates_dir)}")
-#     print(f"Directory exists: {os.path.exists(templates_dir)}")
-#     print(f"Directory is readable: {os.access(templates_dir, os.R_OK)}")
+@router.get("/", response_class=HTMLResponse)
+async def read_root(request: Request, db: Session = Depends(get_db), authorization: str = Header(None)):
+    # Debug prints
+    print(f"Checking if directory exists: {templates_dir}")
+    print(f"Absolute path: {os.path.abspath(templates_dir)}")
+    print(f"Directory exists: {os.path.exists(templates_dir)}")
+    print(f"Directory is readable: {os.access(templates_dir, os.R_OK)}")
 
-#     try:
-#         current_user = await get_current_user(authorization, db)
-#         return templates.TemplateResponse("index.html", {"request": request, "user": current_user})
-#     except HTTPException:
-#         return RedirectResponse(url="/auth")
+    return templates.TemplateResponse("index.html", {"request": request, "user": None})
+    # try:
+    #     current_user = await get_current_user(authorization, db)
+    #     return templates.TemplateResponse("index.html", {"request": request, "user": current_user})
+    # except HTTPException:
+    #     return RedirectResponse(url="/auth")
 
 @router.get("/auth", response_class=HTMLResponse)
-async def auth(request: Request):
+async def auth(request: Request, authorization: str = Header(None)):
+    # if authorization:
+    #     try:
+    #         # If user is already authenticated, redirect to home
+    #         current_user = await get_current_user(authorization, db)
+    #         return RedirectResponse(url="/")
+    #     except HTTPException:
+    #         pass
     return templates.TemplateResponse("auth.html", {"request": request})
 
-print('Views loaded.')  # Debug print
+
