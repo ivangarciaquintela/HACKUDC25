@@ -1,42 +1,143 @@
 {% extends "base.html" %}
 
-{% block title %}Database Agent - Technical Skills Registry{% endblock %}
+{% block title %}AI Agents - Technical Skills Registry{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md">
         <div class="p-6">
-            <h2 class="text-2xl font-bold mb-4">Database Agent</h2>
+            <h2 class="text-2xl font-bold mb-4">AI Agents</h2>
             
-            <div class="mb-6 text-gray-600">
-                <p class="mb-3">Ask questions about users, skills, and their relationships using natural language.</p>
-                <p>For example:</p>
-                <ul class="list-disc ml-6 space-y-1">
-                    <li>"Show me all users who know Python with proficiency level 4 or higher"</li>
-                    <li>"What are the most popular skills in the database?"</li>
-                    <li>"List all skills in the Frameworks category"</li>
+            <!-- Tabs -->
+            <div class="mb-6 border-b border-gray-200">
+                <ul class="flex flex-wrap -mb-px" role="tablist">
+                    <li class="mr-2" role="presentation">
+                        <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 active" 
+                                id="query-tab" 
+                                data-tabs-target="#query-content" 
+                                type="button" 
+                                role="tab" 
+                                aria-selected="true">
+                            Database Query Agent
+                        </button>
+                    </li>
+                    <li class="mr-2" role="presentation">
+                        <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                                id="issue-tab"
+                                data-tabs-target="#issue-content"
+                                type="button"
+                                role="tab"
+                                aria-selected="false">
+                            Issue Creation Agent
+                        </button>
+                    </li>
+                    <li role="presentation">
+                        <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                                id="guide-tab"
+                                data-tabs-target="#guide-content"
+                                type="button"
+                                role="tab"
+                                aria-selected="false">
+                            Guide Creation Agent
+                        </button>
+                    </li>
                 </ul>
             </div>
 
-            <form id="queryForm" class="mb-6">
-                <div class="mb-4">
-                    <label for="query" class="block text-sm font-medium text-gray-700 mb-2">Your Question:</label>
-                    <textarea
-                        id="query"
-                        rows="3"
-                        required
-                        placeholder="Type your question here..."
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    ></textarea>
-                </div>
-                <button type="submit" id="submitBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    Ask Question
-                </button>
-            </form>
+            <!-- Tab Content -->
+            <div id="tabContent">
+                <!-- Database Query Tab -->
+                <div class="block" id="query-content" role="tabpanel">
+                    <div class="mb-6 text-gray-600">
+                        <p class="mb-3">Ask questions about users, skills, and their relationships using natural language.</p>
+                        <p>For example:</p>
+                        <ul class="list-disc ml-6 space-y-1">
+                            <li>"Show me all users who know Python with proficiency level 4 or higher"</li>
+                            <li>"What are the most popular skills in the database?"</li>
+                            <li>"List all skills in the Frameworks category"</li>
+                        </ul>
+                    </div>
 
+                    <form id="queryForm" class="mb-6">
+                        <div class="mb-4">
+                            <label for="query" class="block text-sm font-medium text-gray-700 mb-2">Your Question:</label>
+                            <textarea
+                                id="query"
+                                rows="3"
+                                required
+                                placeholder="Type your database query here..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            ></textarea>
+                        </div>
+                        <button type="submit" id="querySubmitBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Ask Question
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Issue Creation Tab -->
+                <div class="hidden" id="issue-content" role="tabpanel">
+                    <div class="mb-6 text-gray-600">
+                        <p class="mb-3">Describe your technical issue or question in natural language. The AI will help structure and create it.</p>
+                        <p>For example:</p>
+                        <ul class="list-disc ml-6 space-y-1">
+                            <li>"I'm having trouble understanding Python decorators, especially how to create one that takes arguments"</li>
+                            <li>"Need help with React hooks, specifically useEffect cleanup functions"</li>
+                            <li>"Getting a TypeError when using async/await in my JavaScript code"</li>
+                        </ul>
+                    </div>
+
+                    <form id="issueForm" class="mb-6">
+                        <div class="mb-4">
+                            <label for="issueDescription" class="block text-sm font-medium text-gray-700 mb-2">Describe Your Issue:</label>
+                            <textarea
+                                id="issueDescription"
+                                rows="4"
+                                required
+                                placeholder="Describe your technical issue or question here..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            ></textarea>
+                        </div>
+                        <button type="submit" id="issueSubmitBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Create Issue
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Guide Creation Tab -->
+                <div class="hidden" id="guide-content" role="tabpanel">
+                    <div class="mb-6 text-gray-600">
+                        <p class="mb-3">Describe the technical guide or tutorial you want to create. The AI will help structure and format it.</p>
+                        <p>For example:</p>
+                        <ul class="list-disc ml-6 space-y-1">
+                            <li>"Create a guide explaining Python decorators, including how to create ones that take arguments"</li>
+                            <li>"Write a tutorial on React hooks, focusing on useEffect and its cleanup functions"</li>
+                            <li>"Make a beginner's guide to async/await in JavaScript with practical examples"</li>
+                        </ul>
+                    </div>
+
+                    <form id="guideForm" class="mb-6">
+                        <div class="mb-4">
+                            <label for="guideDescription" class="block text-sm font-medium text-gray-700 mb-2">Describe Your Guide:</label>
+                            <textarea
+                                id="guideDescription"
+                                rows="4"
+                                required
+                                placeholder="Describe the technical guide or tutorial you want to create..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            ></textarea>
+                        </div>
+                        <button type="submit" id="guideSubmitBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Create Guide
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Common Result Areas -->
             <div id="loadingArea" class="hidden text-center mb-6">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
-                <p class="mt-2 text-gray-600">Processing your question...</p>
+                <p class="mt-2 text-gray-600">Processing your request...</p>
             </div>
 
             <div id="resultArea" class="hidden">
@@ -83,16 +184,42 @@
         }
     }
 
-    // Handle form submission
-    document.getElementById('queryForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const query = document.getElementById('query').value;
+    // Tab handling
+    const tabButtons = document.querySelectorAll('[role="tab"]');
+    const tabPanels = document.querySelectorAll('[role="tabpanel"]');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Deactivate all tabs
+            tabButtons.forEach(btn => {
+                btn.classList.remove('border-blue-600', 'text-blue-600');
+                btn.classList.add('border-transparent');
+                btn.setAttribute('aria-selected', 'false');
+            });
+
+            // Hide all panels
+            tabPanels.forEach(panel => {
+                panel.classList.add('hidden');
+            });
+
+            // Activate clicked tab
+            button.classList.remove('border-transparent');
+            button.classList.add('border-blue-600', 'text-blue-600');
+            button.setAttribute('aria-selected', 'true');
+
+            // Show corresponding panel
+            const targetId = button.getAttribute('data-tabs-target');
+            document.querySelector(targetId).classList.remove('hidden');
+        });
+    });
+
+    // Handle form submissions
+    async function handleRequest(type, endpoint, data) {
         const resultArea = document.getElementById('resultArea');
         const queryResult = document.getElementById('queryResult');
         const errorArea = document.getElementById('errorArea');
         const loadingArea = document.getElementById('loadingArea');
-        const submitBtn = document.getElementById('submitBtn');
+        const submitBtn = document.getElementById(`${type}SubmitBtn`);
         
         // Hide previous results/errors and show loading
         resultArea.classList.add('hidden');
@@ -101,18 +228,24 @@
         submitBtn.disabled = true;
         
         try {
-            const response = await fetch('http://localhost:8000/agent/query', {
+            const token = localStorage.getItem('token');
+            if (!token && (type === 'issue' || type === 'guide')) {
+                throw new Error(`You must be logged in to create ${type}s`);
+            }
+
+            const response = await fetch(`http://localhost:8000${endpoint}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
                 },
-                body: JSON.stringify({ query })
+                body: JSON.stringify(data)
             });
             
-            const data = await response.json();
+            const responseData = await response.json();
             
             if (!response.ok) {
-                throw new Error(data.detail || 'Failed to process query');
+                throw new Error(responseData.detail || 'Failed to process request');
             }
             
             resultArea.classList.remove('hidden');
@@ -120,56 +253,66 @@
             const rawResponse = document.getElementById('rawResponse');
             
             // Format the response based on its content
-            if (data.response) {
+            if (responseData.response) {
                 try {
-                    // Parse the JSON string in data.response
-                    const parsedResults = JSON.parse(data.response);
+                    const parsedResults = JSON.parse(responseData.response);
                     
                     if (Array.isArray(parsedResults)) {
                         if (parsedResults.length === 0) {
                             formattedResponse.textContent = 'No results found';
                         } else {
-                            // Create a table if the results are objects with properties
                             if (typeof parsedResults[0] === 'object') {
                                 const headers = Object.keys(parsedResults[0]);
                                 formattedResponse.innerHTML = `
-                                    <table class="table">
-                                        <thead>
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
                                             <tr>
-                                                ${headers.map(header => `<th>${header}</th>`).join('')}
+                                                ${headers.map(header => `
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        ${header}
+                                                    </th>
+                                                `).join('')}
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody class="bg-white divide-y divide-gray-200">
                                             ${parsedResults.map(item => `
                                                 <tr>
-                                                    ${headers.map(header => `<td>${item[header]}</td>`).join('')}
+                                                    ${headers.map(header => `
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            ${item[header]}
+                                                        </td>
+                                                    `).join('')}
                                                 </tr>
                                             `).join('')}
                                         </tbody>
                                     </table>
                                 `;
                             } else {
-                                // For arrays of primitive values, display as a list
                                 formattedResponse.innerHTML = `
-                                    <ul class="list-group">
-                                        ${parsedResults.map(item => `<li class="list-group-item">${item}</li>`).join('')}
+                                    <ul class="divide-y divide-gray-200">
+                                        ${parsedResults.map(item => `
+                                            <li class="py-3 text-gray-700">${item}</li>
+                                        `).join('')}
                                     </ul>`;
                             }
                         }
+                    } else if (parsedResults.success) {
+                        formattedResponse.innerHTML = `
+                            <div class="bg-green-50 border border-green-400 text-green-700 px-4 py-3 rounded">
+                                ${parsedResults.message}<br>
+                                ${parsedResults.issue_id ? `Issue ID: ${parsedResults.issue_id}` : ''}
+                            </div>`;
                     } else {
-                        // Handle single result
                         formattedResponse.textContent = JSON.stringify(parsedResults, null, 2);
                     }
                 } catch (e) {
-                    // If parsing fails, display as plain text
-                    formattedResponse.textContent = data.response;
+                    formattedResponse.textContent = responseData.response;
                 }
             } else {
                 formattedResponse.textContent = 'No results found';
             }
             
-            // Store raw response
-            rawResponse.textContent = JSON.stringify(data, null, 2);
+            rawResponse.textContent = JSON.stringify(responseData, null, 2);
         } catch (error) {
             errorArea.classList.remove('hidden');
             errorArea.textContent = error.message;
@@ -177,9 +320,31 @@
             loadingArea.classList.add('hidden');
             submitBtn.disabled = false;
         }
+    }
+
+    // Form submission handlers
+    document.getElementById('queryForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await handleRequest('query', '/agent/query', {
+            query: document.getElementById('query').value
+        });
     });
 
-    // Add toggle function for raw response
+    document.getElementById('issueForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await handleRequest('issue', '/agent/create_issue', {
+            description: document.getElementById('issueDescription').value
+        });
+    });
+
+    document.getElementById('guideForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await handleRequest('guide', '/agent/create_guide', {
+            description: document.getElementById('guideDescription').value
+        });
+    });
+
+    // Toggle raw response
     function toggleRawResponse() {
         const rawResponse = document.getElementById('rawResponse');
         rawResponse.classList.toggle('hidden');
