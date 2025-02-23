@@ -4,59 +4,78 @@
 
 {% block content %}
 <div x-data="userApp" class="container mx-auto mt-10">
-    
-    <!-- Search Bar -->
-    <div> 
+    <div>
         <div class="max-w-3xl mx-auto mb-6 flex flex-wrap gap-4">
             {% include "search-bar.html" %}
             
             <select class="rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm"
-                    x-model="filters.role">
-                <option value="">All Roles</option>
-                <option>Admin</option>
-                <option>User</option>
-                <option>Guest</option>
+                    x-model="selectedSkill" @change="performSearch">
+                <option value="">All Skills</option>
+                <template x-for="(skill, index) in skills" :key="index">
+                    <option x-text="skill"></option>
+                </template>
             </select>
         </div>
     </div>
 
     <!-- Users Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <template x-for="user in filteredUsers" :key="user.id">
+        <template x-for="user in filteredUsers" :key="user.username">
             <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <h3 class="text-lg font-semibold mb-2" x-text="user.name"></h3>
-                <p class="text-gray-600 mb-4" x-text="user.email"></p>
-                <div class="flex items-center text-sm text-gray-500">
-                    <span x-text="user.role"></span>
+                <h3 class="text-lg font-semibold mb-2" x-text="user.username"></h3>
+                <p class="text-gray-600 mb-4" x-text="'Total Skills: ' + user.total_skills"></p>
+                <div class="flex flex-col text-sm text-gray-500">
+                    <template x-for="(skill, index) in user.top_skills" :key="index">
+                        <span x-text="skill.name + ' (Level: ' + skill.proficiency_level + ')'"></span>
+                    </template>
+                    <template x-if="user.top_skills.length === 0">
+                        <span>No skills listed</span>
+                    </template>
                 </div>
             </div>
         </template>
     </div>
-</div>
 
-<script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('userApp', () => ({
-            searchQuery: '',
-            filters: {
-                role: ''
-            },
-            users: [
-                // Sample data - replace with actual data
-                { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin' },
-                { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User' },
-                { id: 3, name: 'Sam Wilson', email: 'sam@example.com', role: 'Guest' }
-            ],
-            get filteredUsers() {
-                return this.users.filter(user => {
-                    return (this.searchQuery === '' || user.name.toLowerCase().includes(this.searchQuery.toLowerCase())) &&
-                           (this.filters.role === '' || user.role === this.filters.role);
-                });
-            },
-            performSearch() {
-                console.log('Searching:', this.searchQuery, this.filters);
-            }
-        }))
-    })
-</script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('userApp', () => ({
+                searchQuery: '',
+                selectedSkill: '',
+                users: [],
+                skills: [],
+                async fetchUsers() {
+                    const response = await fetch(`/users/search?q=${this.searchQuery}&skill=${this.selectedSkill}`);
+                    if (response.ok) {
+                        this.users = await response.json();
+                    } else {
+                        console.error('Failed to fetch users:', response.statusText);
+                    }
+                },
+                async fetchSkills() {
+                    const response = await fetch('/skills/search');
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.skills = data.map(skill => skill.name);
+                    } else {
+                        console.error('Failed to fetch skills:', response.statusText);
+                    }
+                },
+                get filteredUsers() {
+                    return this.users.filter(user => {
+                        const usernameMatch = this.searchQuery === '' || (user.username && user.username.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                        const skillMatch = this.selectedSkill === '' || (user.top_skills.some(skill => skill.name === this.selectedSkill));
+                        return usernameMatch && skillMatch;
+                    });
+                },
+                performSearch() {
+                    this.fetchUsers(); // Call fetchUsers to update the user list based on the search
+                },
+                init() {
+                    this.fetchUsers();
+                    this.fetchSkills(); // Fetch skills to populate the dropdown
+                }
+            }))
+        })
+    </script>
+</div>
 {% endblock %}
