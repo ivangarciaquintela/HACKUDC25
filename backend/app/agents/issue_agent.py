@@ -127,6 +127,6 @@ issue_creation_prompts = {
 # Initialize the issue creation agent with the tool
 issue_creation_agent = ToolCallingAgent(
     tools=[IssueCreatorTool()],
-    model=HfApiModel(token="***REMOVED***dXSOOHVdHtnGNtOeQhxNtUPaFEvVJn"),
+    model=HfApiModel(token=""),
     prompt_templates=issue_creation_prompts
 ) 

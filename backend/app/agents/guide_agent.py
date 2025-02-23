@@ -140,6 +140,6 @@ guide_creation_prompts = {
 # Initialize the guide creation agent with the tool
 guide_creation_agent = ToolCallingAgent(
     tools=[GuideCreatorTool()],
-    model=HfApiModel(token="***REMOVED***dXSOOHVdHtnGNtOeQhxNtUPaFEvVJn"),
+    model=HfApiModel(token=""),
     prompt_templates=guide_creation_prompts
 ) 
