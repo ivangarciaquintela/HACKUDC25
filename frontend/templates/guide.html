@@ -27,11 +27,14 @@
             </div>
 
             <div class="prose max-w-none">
-                <p class="text-gray-600" x-text="guide.content"></p>
+                <div x-html="renderMarkdown(guide.content)"></div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Add marked.js before Alpine script -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
     document.addEventListener('alpine:init', () => {
@@ -41,6 +44,18 @@
 
             async init() {
                 await this.fetchGuide();
+            },
+
+            renderMarkdown(content) {
+                if (!content) return '';
+                // Replace escaped newlines with actual newlines
+                content = content.replace(/\\n/g, '\n');
+                // Configure marked for safe rendering
+                marked.setOptions({
+                    breaks: true,
+                    sanitize: true
+                });
+                return marked.parse(content);
             },
 
             async fetchGuide() {
