@@ -41,7 +41,7 @@
                 <!-- Footer with metadata -->
                 <div class="flex justify-between items-center mt-4 text-sm text-gray-500">
                     <div class="flex items-center">
-                        <span>By: <a :href="'/user-profile.html?username=' + issue.username" 
+                        <span>By: <a :href="'/user/' + issue.username" 
                                    class="text-orange-500 hover:text-orange-600 font-medium transition-colors" 
                                    x-text="issue.username"></a></span>
                         <span class="ml-4" x-text="new Date(issue.created_at).toLocaleDateString()"></span>
