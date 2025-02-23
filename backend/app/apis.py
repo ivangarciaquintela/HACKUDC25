@@ -543,19 +543,19 @@ async def add_user_skill(
 async def delete_user_skill(
     username: str,
     skill_id: str,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Verify user is modifying their own skills
-    if username != current_user.username:
+    # Get user by username
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
         raise HTTPException(
-            status_code=403,
-            detail="You can only modify your own skills"
+            status_code=404,
+            detail="User not found"
         )
     
     # Find and delete the user skill
     user_skill = db.query(UserSkill).filter(
-        UserSkill.user_id == current_user.id,
+        UserSkill.user_id == user.id,
         UserSkill.skill_id == skill_id
     ).first()
     
@@ -709,13 +709,14 @@ async def get_user_guides(
     db: Session = Depends(get_db)
 ):
     # Get the user
-    user = db.query(User).filter(User.username == username).first()
-    if not user:
-        raise HTTPException(
-            status_code=404,
-            detail="User not found"
-        )
-
+    # user = db.query(User).filter(User.username == username).first()
+    # if not user:
+    #     raise HTTPException(
+    #         status_code=404,
+    #         detail="User not found"
+    #     )
+    user = db.query(User).filter(User.username == username).first()   
+    
     guides = db.query(
         Guide.id,
         Guide.title,
@@ -747,16 +748,8 @@ async def get_user_guides(
 async def create_user_guide(
     username: str,
     guide_data: dict,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Verify user is creating their own guide
-    if username != current_user.username:
-        raise HTTPException(
-            status_code=403,
-            detail="You can only create guides for yourself"
-        )
-
     # Get the skill
     skill = db.query(Skill).filter(
         Skill.id == guide_data['skill_id'],
@@ -768,13 +761,14 @@ async def create_user_guide(
             status_code=404,
             detail="Skill not found"
         )
-
+    
+    user = db.query(User).filter(User.username == username).first()    
     # Create new guide
     new_guide = Guide(
         title=guide_data['title'],
         content=guide_data['content'],
         skill_id=skill.id,
-        user_id=current_user.id
+        user_id=user.id
     )
 
     db.add(new_guide)
@@ -790,20 +784,21 @@ async def create_user_guide(
 async def delete_user_guide(
     username: str,
     guide_id: str,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     # Verify user is deleting their own guide
-    if username != current_user.username:
+    # Get user by username
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
         raise HTTPException(
-            status_code=403,
-            detail="You can only delete your own guides"
+            status_code=404,
+            detail="User not found"
         )
 
     # Find the guide
     guide = db.query(Guide).filter(
         Guide.id == guide_id,
-        Guide.user_id == current_user.id
+        Guide.user_id == user.id
     ).first()
 
     if not guide:
@@ -818,7 +813,7 @@ async def delete_user_guide(
 
     return {"message": "Guide deleted successfully"}
 
-@router.get("/guides/{guide_id}")
+@router.get("/api/guides/{guide_id}")
 async def get_guide_details(guide_id: str, db: Session = Depends(get_db)):
     guide = db.query(
         Guide.id,
@@ -888,6 +883,47 @@ async def list_all_issues(
         raise HTTPException(
             status_code=500,
             detail=f"Error fetching issues: {str(e)}"
+        )
+
+@router.get("/guides_list")
+async def list_all_guides(
+    db: Session = Depends(get_db)
+):
+    """Get all guides with their associated skill and user information"""
+    try:
+        guides = db.query(
+            Guide.id,
+            Guide.title,
+            Guide.content,
+            Guide.created_at,
+            User.username,
+            Skill.name.label('skill_name'),
+            Skill.version.label('skill_version')
+        ).join(
+            Skill, Guide.skill_id == Skill.id
+        ).join(
+            User, Guide.user_id == User.id
+        ).order_by(
+            Guide.created_at.desc()
+        ).all()
+
+        return [
+            {
+                "id": str(guide.id),
+                "title": guide.title,
+                "content": guide.content,
+                "created_at": guide.created_at,
+                "username": guide.username,
+                "skill_name": guide.skill_name,
+                "skill_version": guide.skill_version
+            }
+            for guide in guides
+        ]
+    except Exception as e:
+        print(f"Error in list_all_guides: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching guides: {str(e)}"
         )
 
 @router.get("/api/issues/{issue_id}")

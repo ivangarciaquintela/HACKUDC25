@@ -2,25 +2,69 @@
 {% block title %}Guides - Technical Skills Registry{% endblock %}
 {% block content %}
 
-<div x-data="guideApp" class="container mx-auto mt-10">
-    <!-- Search Bar -->
-    <div class="max-w-3xl mx-auto mb-6 flex flex-wrap gap-4">
-        {% include "search-bar.html" %}
-        
-        <select class="rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm" x-model="filters.category">
-            <option value="">All Categories</option>
-            <option value="Development">Development</option>
-            <option value="Design">Design</option>
-            <option value="Marketing">Marketing</option>
-        </select>
-    </div>
-
-    <!-- Guides Grid -->
+<div x-data="guideApp" class="container mx-auto px-8 lg:px-16 py-8 max-w-7xl">
+    <!-- Search Bar and Controls Container -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <div class="md:col-span-2">
+            <div class="flex flex-wrap items-center gap-4 w-full">
+                <!-- Search Bar -->
+                <div class="w-full">
+                    {% include "search-bar.html" %}
+                </div>
+                
+                <!-- Controls Container -->
+                <div class="flex flex-wrap items-center gap-4 w-full justify-start">
+                    <!-- Skill and Version Dropdowns -->
+                    <div class="flex gap-2 min-w-[300px]">
+                        <select class="rounded-lg border-2 border-orange-200 px-4 py-2 bg-white shadow-md focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all duration-200" 
+                                x-model="selectedSkill" @change="loadVersions">
+                            <option value="">All Skills</option>
+                            <template x-for="(skill, index) in skills" :key="index">
+                                <option x-text="skill"></option>
+                            </template>
+                        </select>
+
+                        <select class="rounded-lg border-2 border-orange-200 px-4 py-2 bg-white shadow-md focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all duration-200" 
+                                x-model="selectedVersion" @change="performSearch">
+                            <option value="">All Versions</option>
+                            <template x-for="(version, index) in versions" :key="index">
+                                <option x-text="version"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- New Guide Button -->
+                    <a href="/guides/manage" class="whitespace-nowrap px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>New Guide</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guides Grid -->
         <template x-for="guide in filteredGuides" :key="guide.id">
-            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <h3 class="text-lg font-semibold mb-2" x-text="guide.title"></h3>
-                <div class="prose" x-html="guide.content"></div>
+            <div @click="window.location.href = '/guides/' + guide.id"
+                 class="bg-white rounded-lg shadow-md border border-orange-200 p-6 hover:shadow-lg hover:border-orange-300 transition-all duration-200 flex flex-col cursor-pointer">
+                <!-- Title and Content -->
+                <div class="flex-grow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2" x-text="guide.title"></h3>
+                    <p class="text-gray-600 mb-4" x-text="guide.content"></p>
+                </div>
+                
+                <!-- Footer with metadata -->
+                <div class="flex justify-between items-center mt-4 text-sm text-gray-500">
+                    <div class="flex items-center">
+                        <span>By: <a :href="'/user-profile.html?username=' + guide.username" 
+                                   class="text-orange-500 hover:text-orange-600 font-medium transition-colors" 
+                                   x-text="guide.username"></a></span>
+                        <span class="ml-4" x-text="new Date(guide.created_at).toLocaleDateString()"></span>
+                    </div>
+                    <span class="bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-1 rounded-lg border border-orange-200"
+                          x-text="guide.skill_name + (guide.skill_version ? ' v' + guide.skill_version : '')"></span>
+                </div>
             </div>
         </template>
     </div>
@@ -30,23 +74,76 @@
     document.addEventListener('alpine:init', () => {
         Alpine.data('guideApp', () => ({
             searchQuery: '',
-            filters: {
-                category: ''
+            selectedSkill: '',
+            selectedVersion: '',
+            guides: [],
+            skills: [],
+            versions: [],
+
+            async fetchGuides() {
+                try {
+                    const response = await fetch('/guides_list');
+                    if (response.ok) {
+                        this.guides = await response.json();
+                    } else {
+                        console.error('Failed to fetch guides:', response.statusText);
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch guides:', error);
+                }
             },
-            guides: [
-                // Sample data - replace with actual data
-                { id: 1, title: 'Guide to Development', content: '# Development Guide\nThis is a guide to development.', category: 'Development' },
-                { id: 2, title: 'Guide to Design', content: '# Design Guide\nThis is a guide to design.', category: 'Design' },
-                { id: 3, title: 'Guide to Marketing', content: '# Marketing Guide\nThis is a guide to marketing.', category: 'Marketing' }
-            ],
+
+            async fetchSkills() {
+                try {
+                    const response = await fetch('/skills/search');
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.skills = [...new Set(data.map(skill => skill.name))];
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch skills:', error);
+                }
+            },
+
+            async loadVersions() {
+                if (!this.selectedSkill) {
+                    this.versions = [];
+                    this.selectedVersion = '';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/skills/${this.selectedSkill}/versions`);
+                    if (response.ok) {
+                        this.versions = await response.json();
+                        this.selectedVersion = '';
+                        this.performSearch();
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch versions:', error);
+                }
+            },
+
             get filteredGuides() {
                 return this.guides.filter(guide => {
-                    return (this.searchQuery === '' || guide.title.toLowerCase().includes(this.searchQuery.toLowerCase())) &&
-                        (this.filters.category === '' || guide.category === this.filters.category);
+                    const searchMatch = this.searchQuery === '' || 
+                        guide.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                        guide.content.toLowerCase().includes(this.searchQuery.toLowerCase());
+                    const skillMatch = this.selectedSkill === '' || 
+                        guide.skill_name === this.selectedSkill;
+                    const versionMatch = this.selectedVersion === '' ||
+                        guide.skill_version === this.selectedVersion;
+                    return searchMatch && skillMatch && versionMatch;
                 });
             },
+
             performSearch() {
-                console.log('Searching:', this.searchQuery, this.filters);
+                // The filteredGuides getter will handle the filtering
+            },
+
+            init() {
+                this.fetchSkills();
+                this.fetchGuides();
             }
         }))
     })

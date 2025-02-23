@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Guide Detail - Technical Skills Registry{% endblock %}
+{% block content %}
+
+<div x-data="guideDetailApp" class="container mx-auto px-8 lg:px-16 py-8 max-w-7xl">
+    <div class="max-w-4xl mx-auto">
+        <!-- Back button -->
+        <a href="/guides" class="inline-flex items-center mb-6 text-orange-500 hover:text-orange-600 transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Back to Guides
+        </a>
+
+        <!-- Guide Detail Card -->
+        <div class="bg-white rounded-lg shadow-md border border-orange-200 p-8">
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2" x-text="guide.title"></h1>
+                <div class="flex items-center gap-4 text-sm text-gray-500">
+                    <span>By: <a :href="'/user-profile.html?username=' + guide.username" 
+                               class="text-orange-500 hover:text-orange-600 font-medium transition-colors" 
+                               x-text="guide.username"></a></span>
+                    <span x-text="new Date(guide.created_at).toLocaleDateString()"></span>
+                    <span class="bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-1 rounded-lg border border-orange-200"
+                          x-text="guide.skill_name + (guide.skill_version ? ' v' + guide.skill_version : '')"></span>
+                </div>
+            </div>
+
+            <div class="prose max-w-none">
+                <p class="text-gray-600" x-text="guide.content"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('guideDetailApp', () => ({
+            guide: {},
+            guideId: '{{ guide_id }}',
+
+            async init() {
+                await this.fetchGuide();
+            },
+
+            async fetchGuide() {
+                try {
+                    const response = await fetch(`/api/guides/${this.guideId}`);
+                    if (response.ok) {
+                        this.guide = await response.json();
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch guide:', error);
+                }
+            }
+        }))
+    })
+</script>
+{% endblock %}
