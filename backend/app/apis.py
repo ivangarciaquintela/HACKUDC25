@@ -1151,3 +1151,28 @@ async def add_comment(
             status_code=500,
             detail=f"Error adding comment: {str(e)}"
         )
+
+@router.get("/available_skills")
+async def get_available_skills(db: Session = Depends(get_db)):
+    """Get all unique skills with their versions"""
+    skills = db.query(
+        Skill.id,
+        Skill.name,
+        Skill.version,
+        Skill.category,
+        Skill.description
+    ).order_by(Skill.name, Skill.version).all()
+    
+    # Group skills by name
+    grouped_skills = {}
+    for skill in skills:
+        if skill.name not in grouped_skills:
+            grouped_skills[skill.name] = []
+        grouped_skills[skill.name].append({
+            "id": skill.id,
+            "version": skill.version,
+            "category": skill.category,
+            "description": skill.description
+        })
+    
+    return grouped_skills

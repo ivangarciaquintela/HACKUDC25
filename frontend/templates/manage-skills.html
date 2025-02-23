@@ -2,77 +2,131 @@
 {% block title %}Manage Skills - Technical Skills Registry{% endblock %}
 {% block content %}
 
-<div x-data="skillForm" class="container mx-auto px-8 lg:px-16 py-8 max-w-3xl">
-    <h1 class="text-2xl font-bold mb-6">Add New Skill</h1>
-    
-    <form @submit.prevent="submitForm" class="space-y-6 bg-white p-6 rounded-lg shadow-md border border-orange-200">
-        <!-- Name -->
-        <div>
-            <label for="name" class="block text-sm font-medium text-gray-700">Skill Name</label>
-            <input type="text" id="name" x-model="formData.name" required
-                   class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
+<div class="container mx-auto px-8 lg:px-16 py-8 max-w-6xl">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- New Skill Form -->
+        <div x-data="newSkillForm">
+            <h2 class="text-2xl font-bold mb-6">Create New Skill</h2>
+            
+            <form @submit.prevent="submitForm" class="space-y-6 bg-white p-6 rounded-lg shadow-md border border-orange-200">
+                <!-- Name -->
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700">Skill Name</label>
+                    <input type="text" id="name" x-model="formData.name" required
+                           class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
+                </div>
+
+                <!-- Version -->
+                <div>
+                    <label for="version" class="block text-sm font-medium text-gray-700">Version</label>
+                    <input type="text" id="version" x-model="formData.version" required
+                           class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
+                </div>
+
+                <!-- Category -->
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+                    <input type="text" id="category" x-model="formData.category" required
+                           class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea id="description" x-model="formData.description" rows="4" required
+                              class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200"></textarea>
+                </div>
+
+                <!-- Proficiency Level -->
+                <div>
+                    <label for="new-proficiency" class="block text-sm font-medium text-gray-700">Proficiency Level (1-5)</label>
+                    <input type="number" id="new-proficiency" x-model="formData.proficiency_level" min="1" max="5" required
+                           class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
+                </div>
+
+                <!-- Years of Experience -->
+                <div>
+                    <label for="new-experience" class="block text-sm font-medium text-gray-700">Years of Experience</label>
+                    <input type="number" id="new-experience" x-model="formData.years_experience" min="0" step="0.5" required
+                           class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                    <button type="submit" 
+                            class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-black font-medium rounded-lg transition-colors duration-200">
+                        Create New Skill
+                    </button>
+                </div>
+
+                <!-- Messages -->
+                <div x-show="errorMessage" x-text="errorMessage" class="mt-4 p-4 bg-red-100 text-red-700 rounded-lg" x-transition></div>
+                <div x-show="successMessage" x-text="successMessage" class="mt-4 p-4 bg-green-100 text-green-700 rounded-lg" x-transition></div>
+            </form>
         </div>
 
-        <!-- Version -->
-        <div>
-            <label for="version" class="block text-sm font-medium text-gray-700">Version</label>
-            <input type="text" id="version" x-model="formData.version" required
-                   class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
+        <!-- Subscribe to Existing Skill Form -->
+        <div x-data="existingSkillForm">
+            <h2 class="text-2xl font-bold mb-6">Subscribe to Existing Skill</h2>
+            
+            <form @submit.prevent="submitForm" class="space-y-6 bg-white p-6 rounded-lg shadow-md border border-orange-200">
+                <!-- Skill Selection -->
+                <div>
+                    <label for="skill-name" class="block text-sm font-medium text-gray-700">Skill Name</label>
+                    <select id="skill-name" x-model="selectedSkill" @change="loadVersions" required
+                            class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
+                        <option value="">Select a skill</option>
+                        <template x-for="skill in skills" :key="skill">
+                            <option :value="skill" x-text="skill"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Version Selection -->
+                <div>
+                    <label for="skill-version" class="block text-sm font-medium text-gray-700">Version</label>
+                    <select id="skill-version" x-model="selectedVersion" @change="updateSkillId" required
+                            class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
+                        <option value="">Select a version</option>
+                        <template x-for="version in versions" :key="version">
+                            <option :value="version" x-text="version"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Proficiency Level -->
+                <div>
+                    <label for="existing-proficiency" class="block text-sm font-medium text-gray-700">Proficiency Level (1-5)</label>
+                    <input type="number" id="existing-proficiency" x-model="formData.proficiency_level" min="1" max="5" required
+                           class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
+                </div>
+
+                <!-- Years of Experience -->
+                <div>
+                    <label for="existing-experience" class="block text-sm font-medium text-gray-700">Years of Experience</label>
+                    <input type="number" id="existing-experience" x-model="formData.years_experience" min="0" step="0.5" required
+                           class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                    <button type="submit" 
+                            class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-black font-medium rounded-lg transition-colors duration-200">
+                        Subscribe to Skill
+                    </button>
+                </div>
+
+                <!-- Messages -->
+                <div x-show="errorMessage" x-text="errorMessage" class="mt-4 p-4 bg-red-100 text-red-700 rounded-lg" x-transition></div>
+                <div x-show="successMessage" x-text="successMessage" class="mt-4 p-4 bg-green-100 text-green-700 rounded-lg" x-transition></div>
+            </form>
         </div>
-
-        <!-- Category -->
-        <div>
-            <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
-            <input type="text" id="category" x-model="formData.category" required
-                   class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
-        </div>
-
-        <!-- Description -->
-        <div>
-            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-            <textarea id="description" x-model="formData.description" rows="4" required
-                      class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200"></textarea>
-        </div>
-
-        <!-- Proficiency Level -->
-        <div>
-            <label for="proficiency" class="block text-sm font-medium text-gray-700">Proficiency Level (1-5)</label>
-            <input type="number" id="proficiency" x-model="formData.proficiency_level" min="1" max="5" required
-                   class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
-        </div>
-
-        <!-- Years of Experience -->
-        <div>
-            <label for="experience" class="block text-sm font-medium text-gray-700">Years of Experience</label>
-            <input type="number" id="experience" x-model="formData.years_experience" min="0" step="0.5" required
-                   class="mt-1 block w-full rounded-md border-orange-200 shadow-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200">
-        </div>
-
-        <!-- Submit Button -->
-        <div class="flex justify-end">
-            <button type="submit" 
-                    class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-black font-medium rounded-lg transition-colors duration-200">
-                Add Skill
-            </button>
-        </div>
-
-        <!-- Error Message -->
-        <div x-show="errorMessage" 
-             x-text="errorMessage"
-             class="mt-4 p-4 bg-red-100 text-red-700 rounded-lg"
-             x-transition></div>
-
-        <!-- Success Message -->
-        <div x-show="successMessage" 
-             x-text="successMessage"
-             class="mt-4 p-4 bg-green-100 text-green-700 rounded-lg"
-             x-transition></div>
-    </form>
+    </div>
 </div>
 
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('skillForm', () => ({
+        Alpine.data('newSkillForm', () => ({
             formData: {
                 name: '',
                 version: '',
@@ -116,8 +170,113 @@
                     this.errorMessage = 'An error occurred while adding the skill.';
                 }
             }
-        }))
-    })
+        }));
+
+        Alpine.data('existingSkillForm', () => ({
+            skills: [],
+            selectedSkill: '',
+            selectedVersion: '',
+            versions: [],
+            formData: {
+                skill_id: '',
+                proficiency_level: 1,
+                years_experience: 0
+            },
+            errorMessage: '',
+            successMessage: '',
+
+            async init() {
+                await this.fetchSkills();
+            },
+
+            async fetchSkills() {
+                try {
+                    const response = await fetch('/skills/search');
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.skills = [...new Set(data.map(skill => skill.name))];
+                    }
+                } catch (error) {
+                    console.error('Error fetching skills:', error);
+                }
+            },
+
+            async loadVersions() {
+                if (!this.selectedSkill) {
+                    this.versions = [];
+                    this.selectedVersion = '';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/skills/${this.selectedSkill}/versions`);
+                    if (response.ok) {
+                        this.versions = await response.json();
+                        this.selectedVersion = '';
+                        this.formData.skill_id = '';
+                    }
+                } catch (error) {
+                    console.error('Error fetching versions:', error);
+                }
+            },
+
+            async updateSkillId() {
+                if (this.selectedSkill && this.selectedVersion) {
+                    try {
+                        const response = await fetch('/skills/search');
+                        const skills = await response.json();
+                        const skill = skills.find(s => 
+                            s.name === this.selectedSkill && 
+                            s.version === this.selectedVersion
+                        );
+                        if (skill) {
+                            this.formData.skill_id = skill.id;
+                        }
+                    } catch (error) {
+                        console.error('Error updating skill ID:', error);
+                    }
+                }
+            },
+
+            async submitForm() {
+                this.errorMessage = '';
+                this.successMessage = '';
+
+                if (!this.formData.skill_id) {
+                    this.errorMessage = 'Please select both skill name and version';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/users/{{ user.username }}/skills`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(this.formData)
+                    });
+
+                    if (response.ok) {
+                        this.successMessage = 'Successfully subscribed to skill!';
+                        // Reset form
+                        this.selectedSkill = '';
+                        this.selectedVersion = '';
+                        this.formData = {
+                            skill_id: '',
+                            proficiency_level: 1,
+                            years_experience: 0
+                        };
+                    } else {
+                        const data = await response.json();
+                        this.errorMessage = data.detail || 'An error occurred while subscribing to the skill.';
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    this.errorMessage = 'An error occurred while subscribing to the skill.';
+                }
+            }
+        }));
+    });
 </script>
 
 {% endblock %}
