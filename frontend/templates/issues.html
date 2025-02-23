@@ -8,10 +8,18 @@
         {% include "search-bar.html" %}
         
         <select class="rounded-lg border-2 border-orange-200 px-4 py-2 bg-white shadow-md focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all duration-200" 
-                x-model="selectedSkill" @change="performSearch">
+                x-model="selectedSkill" @change="loadVersions">
             <option value="">All Skills</option>
             <template x-for="(skill, index) in skills" :key="index">
                 <option x-text="skill"></option>
+            </template>
+        </select>
+
+        <select class="rounded-lg border-2 border-orange-200 px-4 py-2 bg-white shadow-md focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all duration-200" 
+                x-model="selectedVersion" @change="performSearch">
+            <option value="">All Versions</option>
+            <template x-for="(version, index) in versions" :key="index">
+                <option x-text="version"></option>
             </template>
         </select>
 
@@ -55,8 +63,10 @@
         Alpine.data('issueApp', () => ({
             searchQuery: '',
             selectedSkill: '',
+            selectedVersion: '',
             issues: [],
             skills: [],
+            versions: [],
 
             async fetchIssues() {
                 try {
@@ -83,6 +93,25 @@
                 }
             },
 
+            async loadVersions() {
+                if (!this.selectedSkill) {
+                    this.versions = [];
+                    this.selectedVersion = '';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/skills/${this.selectedSkill}/versions`);
+                    if (response.ok) {
+                        this.versions = await response.json();
+                        this.selectedVersion = '';
+                        this.performSearch();
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch versions:', error);
+                }
+            },
+
             get filteredIssues() {
                 return this.issues.filter(issue => {
                     const searchMatch = this.searchQuery === '' || 
@@ -90,7 +119,9 @@
                         issue.description.toLowerCase().includes(this.searchQuery.toLowerCase());
                     const skillMatch = this.selectedSkill === '' || 
                         issue.skill_name === this.selectedSkill;
-                    return searchMatch && skillMatch;
+                    const versionMatch = this.selectedVersion === '' || 
+                        issue.skill_version === this.selectedVersion;
+                    return searchMatch && skillMatch && versionMatch;
                 });
             },
 
