@@ -110,11 +110,18 @@ async def guides(request: Request):
 # async def skill_details(skill_id: str, request: Request):
 #     return templates.TemplateResponse("skill-details.html", {"request": request})
 
-@router.get("/myProfile", response_class=HTMLResponse)
-async def guides(request: Request):
-    return templates.TemplateResponse("myProfile.html", {"request": request})
+# @router.get("/myProfile", response_class=HTMLResponse)
+# async def guides(request: Request):
+#     return templates.TemplateResponse("myProfile.html", {"request": request})
 
 @router.get("/agent", response_class=HTMLResponse)
 async def guides(request: Request):
     return templates.TemplateResponse("agent.html", {"request": request})
+
+@router.get("/user/{username}", response_class=HTMLResponse)
+async def user_profile(request: Request, username: str, db: Session = Depends(get_db)):
+    user = await check_auth(request, db)
+    if not user:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_303_SEE_OTHER)
+    return templates.TemplateResponse("user.html", {"request": request, "user": user, "username": username})
 

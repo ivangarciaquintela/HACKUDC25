@@ -37,12 +37,6 @@
             <div class="bg-white rounded-lg shadow-md border border-orange-200 p-6 hover:shadow-lg hover:border-orange-300 transition-all duration-200">
                 <h3 class="text-lg font-semibold mb-2 text-gray-800" x-text="issue.title"></h3>
                 <p class="text-gray-600 mb-4" x-text="issue.description"></p>
-                <div class="flex items-center text-sm text-gray-500 mb-3">
-                    <span>By: <a :href="'/users/' + issue.username" 
-                               class="text-orange-500 hover:text-orange-600 font-medium transition-colors" 
-                               x-text="issue.username"></a></span>
-                    <span class="ml-4" x-text="new Date(issue.created_at).toLocaleDateString()"></span>
-                </div>
                 
                 <!-- Footer with metadata -->
                 <div class="flex justify-between items-center mt-4 text-sm text-gray-500">
