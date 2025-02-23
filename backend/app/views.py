@@ -81,6 +81,14 @@ async def manage_issues(request: Request, db: Session = Depends(get_db)):
 async def guides(request: Request):
     return templates.TemplateResponse("skills.html", {"request": request})
 
+@router.get("/skills/manage", response_class=HTMLResponse)
+async def guides(request: Request):
+    return templates.TemplateResponse("manage-skills.html", {"request": request})
+
+# @router.get("/skills/{skill_id}", response_class=HTMLResponse)
+# async def skill_details(skill_id: str, request: Request):
+#     return templates.TemplateResponse("skill-details.html", {"request": request})
+
 @router.get("/myProfile", response_class=HTMLResponse)
 async def guides(request: Request):
     return templates.TemplateResponse("myProfile.html", {"request": request})
