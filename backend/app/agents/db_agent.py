@@ -34,6 +34,6 @@ def sql_engine(query: str) -> str:
 # Initialize the agent with the SQL tool
 db_agent = ToolCallingAgent(
     tools=[sql_engine],
-    model=HfApiModel(token=""),
+    model=HfApiModel(token="***REMOVED***dXSOOHVdHtnGNtOeQhxNtUPaFEvVJn"),
     prompt_templates=prompt_templates
 ) 
