@@ -4,44 +4,40 @@
 
 <div x-data="guideApp" class="container mx-auto px-8 lg:px-16 py-8 max-w-7xl">
     <!-- Search Bar and Controls Container -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-        <div class="md:col-span-2">
-            <div class="flex flex-wrap items-center gap-4 w-full">
-                <!-- Search Bar -->
-                <div class="w-full">
-                    {% include "search-bar.html" %}
-                </div>
-                
-                <!-- Controls Container -->
-                <div class="flex flex-wrap items-center gap-4 w-full justify-start">
-                    <!-- Skill and Version Dropdowns -->
-                    <div class="flex gap-2 min-w-[300px]">
-                        <select class="rounded-lg border-2 border-orange-200 px-4 py-2 bg-white shadow-md focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all duration-200" 
-                                x-model="selectedSkill" @change="loadVersions">
-                            <option value="">All Skills</option>
-                            <template x-for="(skill, index) in skills" :key="index">
-                                <option x-text="skill"></option>
-                            </template>
-                        </select>
-
-                        <select class="rounded-lg border-2 border-orange-200 px-4 py-2 bg-white shadow-md focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all duration-200" 
-                                x-model="selectedVersion" @change="performSearch">
-                            <option value="">All Versions</option>
-                            <template x-for="(version, index) in versions" :key="index">
-                                <option x-text="version"></option>
-                            </template>
-                        </select>
-                    </div>
-
-                    <!-- New Guide Button -->
-                    <a href="/guides/manage" class="whitespace-nowrap px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>New Guide</span>
-                    </a>
-                </div>
+    <div class="flex flex-col gap-6">
+        <!-- Search Controls Row -->
+        <div class="flex flex-wrap items-center justify-center gap-4">
+            <!-- Search Bar -->
+            <div class="flex-1 min-w-[20rem] max-w-2xl">
+                {% include "search-bar.html" %}
             </div>
+            
+            <!-- Skill and Version Dropdowns -->
+            <div class="flex gap-2 flex-shrink-0">
+                <select class="rounded-lg border-2 border-orange-200 px-4 py-2 bg-white shadow-md focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all duration-200" 
+                        x-model="selectedSkill" @change="loadVersions">
+                    <option value="">All Skills</option>
+                    <template x-for="(skill, index) in skills" :key="index">
+                        <option x-text="skill"></option>
+                    </template>
+                </select>
+
+                <select class="rounded-lg border-2 border-orange-200 px-4 py-2 bg-white shadow-md focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all duration-200" 
+                        x-model="selectedVersion" @change="performSearch">
+                    <option value="">All Versions</option>
+                    <template x-for="(version, index) in versions" :key="index">
+                        <option x-text="version"></option>
+                    </template>
+                </select>
+            </div>
+
+            <!-- New Guide Button -->
+            <a href="/guides/manage" class="whitespace-nowrap px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>New Guide</span>
+            </a>
         </div>
 
         <!-- Guides Grid -->
