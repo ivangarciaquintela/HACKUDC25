@@ -675,20 +675,20 @@ async def create_user_issue(
 async def delete_user_issue(
     username: str,
     issue_id: str,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Verify user is deleting their own issue
-    if username != current_user.username:
+    # Get user by username
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
         raise HTTPException(
-            status_code=403,
-            detail="You can only delete your own issues"
+            status_code=404,
+            detail="User not found"
         )
 
     # Find the issue
     issue = db.query(Issue).filter(
         Issue.id == issue_id,
-        Issue.user_id == current_user.id
+        Issue.user_id == user.id
     ).first()
 
     if not issue:
