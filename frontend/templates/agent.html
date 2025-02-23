@@ -159,28 +159,34 @@
 
 <script>
     // Handle authentication state
-    function updateAuthNav() {
-        const token = localStorage.getItem('token');
-        const authNav = document.getElementById('authNav');
-        
-        if (token) {
-            authNav.innerHTML = `
-                <li class="nav-item">
-                    <a class="nav-link" href="/profile">Profile</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()">Logout</a>
-                </li>
-            `;
-        } else {
-            authNav.innerHTML = `
-                <li class="nav-item">
-                    <a class="nav-link" href="/login">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/register">Register</a>
-                </li>
-            `;
+    async function updateAuthNav() {
+        try {
+            const response = await fetch('http://localhost:8000/profile', {
+                credentials: 'include'  // Important: needed to include cookies
+            });
+            const authNav = document.getElementById('authNav');
+            
+            if (response.ok) {
+                authNav.innerHTML = `
+                    <li class="nav-item">
+                        <a class="nav-link" href="/profile">Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">Logout</a>
+                    </li>
+                `;
+            } else {
+                authNav.innerHTML = `
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/register">Register</a>
+                    </li>
+                `;
+            }
+        } catch (error) {
+            console.error('Error checking authentication:', error);
         }
     }
 
@@ -228,16 +234,21 @@
         submitBtn.disabled = true;
         
         try {
-            const token = localStorage.getItem('token');
-            if (!token && (type === 'issue' || type === 'guide')) {
-                throw new Error(`You must be logged in to create ${type}s`);
+            // Check authentication for issue/guide creation
+            if (type === 'issue' || type === 'guide') {
+                const authCheck = await fetch('http://localhost:8000/profile', {
+                    credentials: 'include'
+                });
+                if (!authCheck.ok) {
+                    throw new Error(`You must be logged in to create ${type}s`);
+                }
             }
 
             const response = await fetch(`http://localhost:8000${endpoint}`, {
                 method: 'POST',
+                credentials: 'include',  // Important: needed to include cookies
                 headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(data)
             });

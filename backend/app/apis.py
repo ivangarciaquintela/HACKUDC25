@@ -37,13 +37,18 @@ def create_access_token(data: dict):
     return encoded_jwt
 
 # Helper function to get current user
-async def get_current_user(authorization: str = Header(None), db: Session = Depends(get_db)):
+async def get_current_user(access_token: str = Cookie(None), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials"
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
     )
+    
+    if not access_token:
+        raise credentials_exception
+        
     try:
-        payload = jwt.decode(authorization, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
@@ -963,7 +968,8 @@ class NaturalLanguageIssueRequest(BaseModel):
 @router.post("/agent/create_issue")
 async def create_issue_with_agent(
     request: NaturalLanguageIssueRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     Endpoint to create a new issue using natural language through an AI agent.
@@ -993,7 +999,8 @@ class NaturalLanguageGuideRequest(BaseModel):
 @router.post("/agent/create_guide")
 async def create_guide_with_agent(
     request: NaturalLanguageGuideRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     Endpoint to create a new learning guide using natural language through an AI agent.
