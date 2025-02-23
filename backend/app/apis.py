@@ -27,7 +27,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # JWT Configuration
 SECRET_KEY = "your-secret-key-here"  # Change this in production!
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 3000
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -638,15 +638,8 @@ async def get_user_issues(
 async def create_user_issue(
     username: str,
     issue_data: dict,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Verify user is creating their own issue
-    if username != current_user.username:
-        raise HTTPException(
-            status_code=403,
-            detail="You can only create issues for yourself"
-        )
 
     # Get the skill
     skill = db.query(Skill).filter(
@@ -659,13 +652,14 @@ async def create_user_issue(
             status_code=404,
             detail="Skill not found"
         )
-
+    
+    user = db.query(User).filter(User.username == username).first()    
     # Create new issue
     new_issue = Issue(
         title=issue_data['title'],
         description=issue_data['description'],
         skill_id=skill.id,
-        user_id=current_user.id
+        user_id=user.id
     )
 
     db.add(new_issue)

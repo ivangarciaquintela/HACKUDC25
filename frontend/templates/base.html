@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" x-data="{ activeTab: window.location.pathname }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,32 +8,40 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
-    <nav class="bg-white dark:bg-gray-800 shadow-lg fixed w-full top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav class="bg-white shadow-lg fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-8 lg:px-16">
             <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <a href="/" class="text-3xl font-bold text-gray-900 dark:text-white">
-                            Skill <span class="bg-orange-500 text-black rounded-lg px-1 py-1">Hub</span>
-                        </a>
-                    </div>
-                    {% if show_nav|default(true) %}
-                    <div class="hidden md:ml-6 md:flex md:space-x-8">
-                        <a x-on:click="activeView = 'issues'" href="/issues" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Issues</a>
-                        <a x-on:click="activeView = 'guides'" href="/guides" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Guides</a>
-                        <a x-on:click="activeView = 'users'" href="/users" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Users</a>
-                        <a x-on:click="activeView = 'skills'" href="/skills" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Skills</a>
-                        <a x-on:click="activeView = 'agent'" href="/agent" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">Agent</a>
-                        <a href="/myProfile" class="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md">My Profile</a>
-                    </div>
-                    {% endif %}
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="/" class="text-3xl font-bold text-gray-900">
+                        Skill <span class="bg-orange-500 text-black rounded-lg px-2 py-1">Hub</span>
+                    </a>
                 </div>
                 {% if show_nav|default(true) %}
-                <div class="flex items-center">
-                    <button onclick="handleLogout(event)" 
-                       class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 font-medium px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                        Logout
-                    </button>
+                <div class="flex flex-1 justify-end">
+                    <div class="hidden md:flex items-center space-x-1">
+                        <a href="/issues" 
+                           :class="{ 'bg-orange-100 text-orange-700': activeTab === '/issues' }"
+                           class="px-4 py-2 rounded-lg text-gray-700 hover:bg-orange-50 transition-colors duration-200">Issues</a>
+                        <a href="/guides" 
+                           :class="{ 'bg-orange-100 text-orange-700': activeTab === '/guides' }"
+                           class="px-4 py-2 rounded-lg text-gray-700 hover:bg-orange-50 transition-colors duration-200">Guides</a>
+                        <a href="/users" 
+                           :class="{ 'bg-orange-100 text-orange-700': activeTab === '/users' }"
+                           class="px-4 py-2 rounded-lg text-gray-700 hover:bg-orange-50 transition-colors duration-200">Users</a>
+                        <a href="/skills" 
+                           :class="{ 'bg-orange-100 text-orange-700': activeTab === '/skills' }"
+                           class="px-4 py-2 rounded-lg text-gray-700 hover:bg-orange-50 transition-colors duration-200">Skills</a>
+                        <a href="/agent" 
+                           :class="{ 'bg-orange-100 text-orange-700': activeTab === '/agent' }"
+                           class="px-4 py-2 rounded-lg text-gray-700 hover:bg-orange-50 transition-colors duration-200">Agent</a>
+                        <a href="/myProfile" 
+                           :class="{ 'bg-orange-100 text-orange-700': activeTab === '/myProfile' }"
+                           class="px-4 py-2 rounded-lg text-gray-700 hover:bg-orange-50 transition-colors duration-200">My Profile</a>
+                        <button onclick="handleLogout(event)" 
+                           class="ml-4 px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200">
+                            Logout
+                        </button>
+                    </div>
                 </div>
                 {% endif %}
             </div>

@@ -2,33 +2,42 @@
 {% block title %}Issues - Technical Skills Registry{% endblock %}
 {% block content %}
 
-<div x-data="issueApp" class="container mx-auto mt-10">
+<div x-data="issueApp" class="container mx-auto px-8 lg:px-16 py-8 max-w-7xl">
     <!-- Search Bar -->
-    <div class="max-w-3xl mx-auto mb-6 flex flex-wrap gap-4">
+    <div class="max-w-3xl mx-auto mb-8 flex flex-wrap items-center gap-4">
         {% include "search-bar.html" %}
         
-        <select class="rounded-lg border border-gray-300 px-4 py-2 bg-white shadow-sm" x-model="filters.skill">
+        <select class="rounded-lg border-2 border-orange-200 px-4 py-2 bg-white shadow-md focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all duration-200" 
+                x-model="filters.skill">
             <option value="">All Skills</option>
             <option value="Python">Python</option>
             <option value="JavaScript">JavaScript</option>
             <option value="HTML">HTML</option>
             <option value="CSS">CSS</option>
         </select>
+
+        <a href="/issues/manage" 
+           class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-black font-medium rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center">
+            <span class="text-xl">+</span>
+        </a>
     </div>
 
     <!-- Issues Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
         <template x-for="issue in filteredIssues" :key="issue.id">
-            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                <h3 class="text-lg font-semibold mb-2" x-text="issue.title"></h3>
+            <div class="bg-white rounded-lg shadow-md border border-orange-200 p-6 hover:shadow-lg hover:border-orange-300 transition-all duration-200">
+                <h3 class="text-lg font-semibold mb-2 text-gray-800" x-text="issue.title"></h3>
                 <p class="text-gray-600 mb-4" x-text="issue.description"></p>
-                <div class="flex items-center text-sm text-gray-500 mb-2">
-                    <span>By: <a :href="'/user-profile.html?username=' + issue.username" class="user-link" x-text="issue.username"></a></span>
+                <div class="flex items-center text-sm text-gray-500 mb-3">
+                    <span>By: <a :href="'/user-profile.html?username=' + issue.username" 
+                               class="text-orange-500 hover:text-orange-600 font-medium transition-colors" 
+                               x-text="issue.username"></a></span>
                     <span class="ml-4" x-text="new Date(issue.created_at).toLocaleDateString()"></span>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <template x-for="skill in issue.skills" :key="skill">
-                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded" x-text="skill"></span>
+                        <span class="bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-1 rounded-lg border border-orange-200"
+                              x-text="skill"></span>
                     </template>
                 </div>
             </div>
