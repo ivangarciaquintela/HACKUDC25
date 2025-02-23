@@ -17,9 +17,10 @@ The services will be available at:
 
 xan issues:
 
-- delete own from issues
-- issue.html
-- skill version dropdown
+- skill version dropdown on users
+- if filtering does not have results return "no results"
+- users.html containers should have the same size and show top 3 skills
+- users.html show and filter team
 
 - profile page
 - [ ] API to add and query stufff
