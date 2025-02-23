@@ -13,7 +13,7 @@
             <option value="">All Categories</option>
         </select>
 
-        <a href="/skills/manage" 
+        <a href="/skills_manage" 
            class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-black font-medium rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center">
             <span class="text-xl">+</span>
         </a>
@@ -36,7 +36,7 @@
     </div>
 </div>
 
-<script src="/static/getElements.js"></script>
+<!-- <script src="/static/getElements.js"></script> -->
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('skillApp', () => ({
@@ -47,11 +47,21 @@
             skills: [],
             async fetchSkills() {
                 try {
-                    const response = await fetch('http://localhost:8000/skills/search');
-                    const skills = await response.json();
-                    this.skills = skills;
+                    const response = await fetch('/skills/search', {
+                        credentials: 'same-origin'
+                    });
+                    if (response.status === 401) {
+                        window.location.href = '/auth';
+                        return;
+                    }
+                    if (response.ok) {
+                        this.skills = await response.json();
+                    }
                 } catch (error) {
                     console.error('Error fetching skills:', error);
+                    if (error.response?.status === 401) {
+                        window.location.href = '/auth';
+                    }
                 }
             },
             get filteredSkills() {
@@ -72,18 +82,28 @@
 
     async function fetchCategories() {
         try {   
-            const response = await fetch('http://localhost:8000/skills/categories');
-            const categories = await response.json();
-            const categorySelect = document.getElementById('categorySelect');
-
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category;
-                option.textContent = category;
-                categorySelect.appendChild(option);
+            const response = await fetch('/skills/categories', {
+                credentials: 'same-origin'
             });
+            if (response.status === 401) {
+                window.location.href = '/auth';
+                return;
+            }
+            if (response.ok) {
+                const categories = await response.json();
+                const categorySelect = document.getElementById('categorySelect');
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    categorySelect.appendChild(option);
+                });
+            }
         } catch (error) {
             console.error('Error fetching categories:', error);
+            if (error.response?.status === 401) {
+                window.location.href = '/auth';
+            }
         }
     }  
 </script>
