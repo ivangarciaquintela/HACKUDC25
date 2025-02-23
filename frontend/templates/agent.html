@@ -9,10 +9,10 @@
             <h2 class="text-2xl font-bold mb-4">AI Agents</h2>
             
             <!-- Tabs -->
-            <div class="mb-6 border-b border-gray-200">
-                <ul class="flex flex-wrap -mb-px" role="tablist">
-                    <li class="mr-2" role="presentation">
-                        <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300 active" 
+            <div class="mb-6 border-b-2 border-orange-200">
+                <ul class="flex flex-wrap -mb-px w-full" role="tablist">
+                    <li class="flex-1" role="presentation">
+                        <button class="w-full inline-block p-4 border-b-2 text-orange-500 border-orange-500 rounded-t-lg hover:text-orange-600 hover:border-orange-600 transition-colors duration-200 active" 
                                 id="query-tab" 
                                 data-tabs-target="#query-content" 
                                 type="button" 
@@ -21,8 +21,8 @@
                             Database Query Agent
                         </button>
                     </li>
-                    <li class="mr-2" role="presentation">
-                        <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                    <li class="flex-1" role="presentation">
+                        <button class="w-full inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-orange-600 hover:border-orange-300 transition-colors duration-200"
                                 id="issue-tab"
                                 data-tabs-target="#issue-content"
                                 type="button"
@@ -31,8 +31,8 @@
                             Issue Creation Agent
                         </button>
                     </li>
-                    <li role="presentation">
-                        <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                    <li class="flex-1" role="presentation">
+                        <button class="w-full inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-orange-600 hover:border-orange-300 transition-colors duration-200"
                                 id="guide-tab"
                                 data-tabs-target="#guide-content"
                                 type="button"
@@ -66,10 +66,10 @@
                                 rows="3"
                                 required
                                 placeholder="Type your database query here..."
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                class="w-full px-3 py-2 border-2 border-orange-200 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all duration-200"
                             ></textarea>
                         </div>
-                        <button type="submit" id="querySubmitBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="submit" id="querySubmitBtn" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-md">
                             Ask Question
                         </button>
                     </form>
@@ -95,10 +95,10 @@
                                 rows="4"
                                 required
                                 placeholder="Describe your technical issue or question here..."
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                class="w-full px-3 py-2 border-2 border-orange-200 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all duration-200"
                             ></textarea>
                         </div>
-                        <button type="submit" id="issueSubmitBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="submit" id="issueSubmitBtn" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-md">
                             Create Issue
                         </button>
                     </form>
@@ -124,10 +124,10 @@
                                 rows="4"
                                 required
                                 placeholder="Describe the technical guide or tutorial you want to create..."
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                class="w-full px-3 py-2 border-2 border-orange-200 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-200 transition-all duration-200"
                             ></textarea>
                         </div>
-                        <button type="submit" id="guideSubmitBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="submit" id="guideSubmitBtn" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-md">
                             Create Guide
                         </button>
                     </form>
@@ -198,7 +198,7 @@
         button.addEventListener('click', () => {
             // Deactivate all tabs
             tabButtons.forEach(btn => {
-                btn.classList.remove('border-blue-600', 'text-blue-600');
+                btn.classList.remove('border-orange-500', 'text-orange-500');
                 btn.classList.add('border-transparent');
                 btn.setAttribute('aria-selected', 'false');
             });
@@ -210,7 +210,7 @@
 
             // Activate clicked tab
             button.classList.remove('border-transparent');
-            button.classList.add('border-blue-600', 'text-blue-600');
+            button.classList.add('border-orange-500', 'text-orange-500');
             button.setAttribute('aria-selected', 'true');
 
             // Show corresponding panel
