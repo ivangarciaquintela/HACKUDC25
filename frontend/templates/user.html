@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}User Profile - Technical Skills Registry{% endblock %}
+{% block content %}
+
+<div x-data="userProfileApp" class="container mx-auto px-8 lg:px-16 py-8 max-w-7xl">
+    <div class="max-w-4xl mx-auto">
+        <!-- Back button -->
+        <a href="/users" class="inline-flex items-center mb-6 text-orange-500 hover:text-orange-600 transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Back to Users
+        </a>
+
+        <!-- User Profile Card -->
+        <div class="bg-white rounded-lg shadow-md border border-orange-200 p-8">
+            <!-- User Info -->
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2" x-text="profile.username"></h1>
+                <p class="text-gray-600" x-text="'Member since ' + new Date(profile.created_at).toLocaleDateString()"></p>
+                <p class="text-gray-600" x-text="'Email: ' + profile.email"></p>
+            </div>
+
+            <!-- Skills Section -->
+            <div class="mt-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Skills</h2>
+                
+                <!-- Skills Grid -->
+                <div class="grid gap-4 md:grid-cols-2">
+                    <template x-for="skill in skills" :key="skill.skill_id">
+                        <div class="bg-gray-50 rounded-lg p-4 border border-orange-100">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="font-medium text-gray-800" x-text="skill.name"></h3>
+                                    <p class="text-sm text-gray-600" x-text="skill.category"></p>
+                                </div>
+                                <span class="text-sm text-orange-600 font-medium" x-text="skill.version ? 'v' + skill.version : ''"></span>
+                            </div>
+                            
+                            <!-- Proficiency Bar -->
+                            <div class="mt-2">
+                                <div class="text-sm text-gray-600 mb-1">Proficiency</div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-orange-500 h-2.5 rounded-full"
+                                         :style="`width: ${(skill.proficiency_level / 5) * 100}%`"></div>
+                                </div>
+                                <div class="text-sm text-gray-600 mt-1" x-text="`${skill.proficiency_level}/5`"></div>
+                            </div>
+                            
+                            <!-- Experience -->
+                            <div class="mt-2 text-sm text-gray-600">
+                                <p x-text="`${skill.years_experience} years of experience`"></p>
+                                <p x-text="'Last used: ' + new Date(skill.last_used_date).toLocaleDateString()"
+                                   x-show="skill.last_used_date"></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                
+                <!-- No Skills Message -->
+                <div x-show="skills.length === 0" class="text-center py-8 text-gray-500">
+                    No skills added yet.
+                </div>
+            </div>
+
+            <!-- Guides Section -->
+            <div class="mt-8 pt-8 border-t border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Guides</h2>
+                
+                <div class="space-y-4">
+                    <template x-for="guide in guides" :key="guide.id">
+                        <div class="bg-gray-50 rounded-lg p-4 border border-orange-100">
+                            <a :href="'/guides/' + guide.id" class="block hover:bg-gray-100 transition-colors rounded-lg">
+                                <h3 class="font-medium text-gray-800" x-text="guide.title"></h3>
+                                <p class="text-sm text-gray-600 mt-1" x-text="guide.skill_name + (guide.skill_version ? ' v' + guide.skill_version : '')"></p>
+                                <p class="text-sm text-gray-500 mt-2" x-text="'Created: ' + new Date(guide.created_at).toLocaleDateString()"></p>
+                            </a>
+                        </div>
+                    </template>
+                </div>
+                
+                <div x-show="guides.length === 0" class="text-center py-8 text-gray-500">
+                    No guides created yet.
+                </div>
+            </div>
+
+            <!-- Issues Section -->
+            <div class="mt-8 pt-8 border-t border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Issues</h2>
+                
+                <div class="space-y-4">
+                    <template x-for="issue in issues" :key="issue.id">
+                        <div class="bg-gray-50 rounded-lg p-4 border border-orange-100">
+                            <a :href="'/issues/' + issue.id" class="block hover:bg-gray-100 transition-colors rounded-lg">
+                                <h3 class="font-medium text-gray-800" x-text="issue.title"></h3>
+                                <p class="text-sm text-gray-600 mt-1" x-text="issue.skill_name + (issue.skill_version ? ' v' + issue.skill_version : '')"></p>
+                                <p class="text-sm text-gray-500 mt-2" x-text="'Created: ' + new Date(issue.created_at).toLocaleDateString()"></p>
+                            </a>
+                        </div>
+                    </template>
+                </div>
+                
+                <div x-show="issues.length === 0" class="text-center py-8 text-gray-500">
+                    No issues reported yet.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('userProfileApp', () => ({
+            profile: {},
+            skills: [],
+            guides: [],
+            issues: [],
+            username: '{{ username }}',
+
+            async init() {
+                await this.fetchProfile();
+                await this.fetchSkills();
+                await this.fetchGuides();
+                await this.fetchIssues();
+            },
+
+            async fetchProfile() {
+                try {
+                    const response = await fetch(`/users/${this.username}`);
+                    if (response.ok) {
+                        this.profile = await response.json();
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch profile:', error);
+                }
+            },
+
+            async fetchSkills() {
+                try {
+                    const response = await fetch(`/users/${this.username}/skills`);
+                    if (response.ok) {
+                        this.skills = await response.json();
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch skills:', error);
+                }
+            },
+
+            async fetchGuides() {
+                try {
+                    const response = await fetch(`/users/${this.username}/guides`);
+                    if (response.ok) {
+                        this.guides = await response.json();
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch guides:', error);
+                }
+            },
+
+            async fetchIssues() {
+                try {
+                    const response = await fetch(`/users/${this.username}/issues`);
+                    if (response.ok) {
+                        this.issues = await response.json();
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch issues:', error);
+                }
+            }
+        }))
+    })
+</script>
+{% endblock %}
