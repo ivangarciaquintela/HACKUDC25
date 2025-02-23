@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Issue Detail - Technical Skills Registry{% endblock %}
+{% block content %}
+
+<div x-data="issueDetailApp" class="container mx-auto px-8 lg:px-16 py-8 max-w-7xl">
+    <div class="max-w-4xl mx-auto">
+        <!-- Back button -->
+        <a href="/issues" class="inline-flex items-center mb-6 text-orange-500 hover:text-orange-600 transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Back to Issues
+        </a>
+
+        <!-- Issue Detail Card -->
+        <div class="bg-white rounded-lg shadow-md border border-orange-200 p-8">
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-800 mb-2" x-text="issue.title"></h1>
+                <div class="flex items-center gap-4 text-sm text-gray-500">
+                    <span>By: <a :href="'/user-profile.html?username=' + issue.username" 
+                               class="text-orange-500 hover:text-orange-600 font-medium transition-colors" 
+                               x-text="issue.username"></a></span>
+                    <span x-text="new Date(issue.created_at).toLocaleDateString()"></span>
+                    <span class="bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-1 rounded-lg border border-orange-200"
+                          x-text="issue.skill_name + (issue.skill_version ? ' v' + issue.skill_version : '')"></span>
+                </div>
+            </div>
+
+            <div class="prose max-w-none">
+                <p class="text-gray-600" x-text="issue.description"></p>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="mt-8 pt-8 border-t border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Comments</h2>
+                
+                <!-- Comments List -->
+                <div class="space-y-4">
+                    <template x-for="comment in comments" :key="comment.id">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-medium text-gray-700" x-text="comment.username"></span>
+                                <span class="text-sm text-gray-500" x-text="new Date(comment.created_at).toLocaleDateString()"></span>
+                            </div>
+                            <p class="text-gray-600" x-text="comment.content"></p>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Add Comment Form -->
+                <form @submit.prevent="submitComment" class="mt-6">
+                    <textarea
+                        x-model="newComment"
+                        class="w-full rounded-lg border-2 border-orange-200 p-3 focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
+                        rows="3"
+                        placeholder="Add a comment..."
+                        required
+                    ></textarea>
+                    <button
+                        type="submit"
+                        class="mt-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
+                    >
+                        Add Comment
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('issueDetailApp', () => ({
+            issue: {},
+            comments: [],
+            newComment: '',
+            issueId: '{{ issue_id }}',
+
+            async init() {
+                await this.fetchIssue();
+                await this.fetchComments();
+            },
+
+            async fetchIssue() {
+                try {
+                    const response = await fetch(`/api/issues/${this.issueId}`);
+                    if (response.ok) {
+                        this.issue = await response.json();
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch issue:', error);
+                }
+            },
+
+            async fetchComments() {
+                try {
+                    const response = await fetch(`/issues/${this.issueId}/comments`);
+                    if (response.ok) {
+                        this.comments = await response.json();
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch comments:', error);
+                }
+            },
+
+            async submitComment() {
+                if (!this.newComment.trim()) return;
+
+                const formData = new FormData();
+                formData.append('content', this.newComment);
+
+                try {
+                    const response = await fetch(`/api/add_comment/${this.issueId}/{{ user.id }}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const comment = await response.json();
+                        this.comments.push(comment);
+                        this.newComment = '';
+                    } else {
+                        console.error('Failed to submit comment:', response.statusText);
+                        alert('Failed to submit comment. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Failed to submit comment:', error);
+                    alert('Failed to submit comment. Please try again.');
+                }
+            }
+        }))
+    })
+</script>
+{% endblock %}

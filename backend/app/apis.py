@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header, Query, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Header, Query, Form, Cookie
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
@@ -849,7 +849,48 @@ async def get_guide_details(guide_id: str, db: Session = Depends(get_db)):
         "username": guide.username
     }
 
-@router.get("/issues/{issue_id}")
+@router.get("/issues_list")
+async def list_all_issues(
+    db: Session = Depends(get_db)
+):
+    """Get all issues with their associated skill and user information"""
+    try:
+        issues = db.query(
+            Issue.id,
+            Issue.title,
+            Issue.description,
+            Issue.created_at,
+            User.username,
+            Skill.name.label('skill_name'),
+            Skill.version.label('skill_version')
+        ).join(
+            Skill, Issue.skill_id == Skill.id
+        ).join(
+            User, Issue.user_id == User.id
+        ).order_by(
+            Issue.created_at.desc()
+        ).all()
+
+        return [
+            {
+                "id": str(issue.id),
+                "title": issue.title,
+                "description": issue.description,
+                "created_at": issue.created_at,
+                "username": issue.username,
+                "skill_name": issue.skill_name,
+                "skill_version": issue.skill_version
+            }
+            for issue in issues
+        ]
+    except Exception as e:
+        print(f"Error in list_all_issues: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching issues: {str(e)}"
+        )
+
+@router.get("/api/issues/{issue_id}")
 async def get_issue_details(issue_id: str, db: Session = Depends(get_db)):
     issue = db.query(
         Issue.id,
@@ -997,3 +1038,73 @@ async def create_issue_comment(
         "created_at": new_comment.created_at,
         "username": current_user.username
     }
+
+@router.post("/api/add_comment/{issue_id}/{user_id}")
+async def add_comment(
+    issue_id: str,
+    user_id: str,
+    content: str = Form(...),
+    db: Session = Depends(get_db),
+    token: str = Cookie(None, alias="access_token")
+):
+    if not token:
+        raise HTTPException(
+            status_code=401,
+            detail="Not authenticated"
+        )
+    
+    try:
+        # Get user from token
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if not username:
+            raise HTTPException(status_code=401, detail="Invalid token")
+            
+        current_user = db.query(User).filter(User.username == username).first()
+        if not current_user:
+            raise HTTPException(status_code=401, detail="User not found")
+            
+        # Verify user matches the user_id
+        if str(current_user.id) != user_id:
+            raise HTTPException(
+                status_code=403,
+                detail="You can only add comments as yourself"
+            )
+        
+        # Verify issue exists
+        issue = db.query(Issue).filter(Issue.id == issue_id).first()
+        if not issue:
+            raise HTTPException(
+                status_code=404,
+                detail="Issue not found"
+            )
+
+        # Create new comment
+        new_comment = Comment(
+            content=content,
+            issue_id=issue_id,
+            user_id=current_user.id,
+            created_at=datetime.now()
+        )
+
+        db.add(new_comment)
+        db.commit()
+        db.refresh(new_comment)
+
+        return {
+            "id": str(new_comment.id),
+            "content": new_comment.content,
+            "created_at": new_comment.created_at,
+            "username": current_user.username
+        }
+    except JWTError:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid authentication token"
+        )
+    except Exception as e:
+        print(f"Error adding comment: {str(e)}")  # Debug line
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error adding comment: {str(e)}"
+        )

@@ -77,6 +77,13 @@ async def manage_issues(request: Request, db: Session = Depends(get_db)):
         return RedirectResponse(url="/auth", status_code=status.HTTP_303_SEE_OTHER)
     return templates.TemplateResponse("manage-issues.html", {"request": request, "user": user})
 
+@router.get("/issues/{issue_id}", response_class=HTMLResponse)
+async def issue_detail(request: Request, issue_id: str, db: Session = Depends(get_db)):
+    user = await check_auth(request, db)
+    if not user:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_303_SEE_OTHER)
+    return templates.TemplateResponse("issue.html", {"request": request, "user": user, "issue_id": issue_id})
+
 @router.get("/skills", response_class=HTMLResponse)
 async def guides(request: Request):
     return templates.TemplateResponse("skills.html", {"request": request})
