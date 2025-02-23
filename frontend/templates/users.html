@@ -20,12 +20,12 @@
     <!-- Users Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <template x-for="user in filteredUsers" :key="user.username">
-            <a :href="'/user/' + user.username" class="block">
-                <div class="bg-white rounded-lg shadow-md border border-orange-200 p-6 hover:shadow-lg transition-shadow cursor-pointer">
+            <a :href="'/user/' + user.username" class="block h-full">
+                <div class="bg-white rounded-lg shadow-md border border-orange-200 p-6 hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
                     <h3 class="text-xl font-semibold text-gray-800 mb-2" x-text="user.username"></h3>
                     <p class="text-gray-600 text-sm mb-4" x-text="'Member since ' + new Date(user.created_at).toLocaleDateString()"></p>
                     
-                    <div class="space-y-2">
+                    <div class="space-y-2 flex-grow">
                         <p class="text-sm text-gray-600">
                             <span class="font-medium">Total skills:</span>
                             <span x-text="user.total_skills"></span>
